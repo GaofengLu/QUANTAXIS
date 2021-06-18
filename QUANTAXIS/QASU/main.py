@@ -527,6 +527,19 @@ def QA_SU_save_stock_xdxr(engine, client=DATABASE):
     engine = select_save_engine(engine)
     engine.QA_SU_save_stock_xdxr(client=client)
 
+def QA_SU_save_etf_xdxr(engine, client=DATABASE):
+    """save etf_xdxr
+
+    Arguments:
+        engine {[type]} -- [description]
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    engine = select_save_engine(engine)
+    engine.QA_SU_save_etf_xdxr(client=client)
+
 
 def QA_SU_save_stock_block(engine, client=DATABASE):
     """save stock_block

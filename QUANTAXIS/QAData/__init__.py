@@ -55,6 +55,8 @@ from QUANTAXIS.QAData.QADataStruct import (
     QA_DataStruct_Future_min,
     QA_DataStruct_Index_day,
     QA_DataStruct_Index_min,
+    QA_DataStruct_ETF_day,
+    QA_DataStruct_ETF_min,
     QA_DataStruct_Index_transaction,
     QA_DataStruct_Min,
     QA_DataStruct_Stock_day,

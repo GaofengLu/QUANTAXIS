@@ -82,7 +82,8 @@ from QUANTAXIS.QASU.main import (QA_SU_crawl_eastmoney, QA_SU_save_bond_day,
                                  QA_SU_save_stock_info_tushare,
                                  QA_SU_save_stock_list, QA_SU_save_stock_min,
                                  QA_SU_save_stock_transaction,
-                                 QA_SU_save_stock_xdxr)
+                                 QA_SU_save_stock_xdxr,
+                                 QA_SU_save_etf_xdxr)
 from QUANTAXIS.QASU.save_binance import (QA_SU_save_binance,
                                          QA_SU_save_binance_1day,
                                          QA_SU_save_binance_1hour,
@@ -284,9 +285,9 @@ class CLI(cmd.Cmd):
         print(
             "Usage: \n\
             命令格式：save all  : save stock_day/xdxr/ index_day/ stock_list/index_list \n\
-            命令格式：save X|x  : save stock_day/xdxr/min index_day/min etf_day/min stock_list/index_list/block \n\
-            命令格式：save day  : save stock_day/xdxr index_day etf_day stock_list/index_list \n\
-            命令格式：save min  : save stock_min/xdxr index_min etf_min stock_list/index_list \n\
+            命令格式：save X|x  : save stock_day/xdxr/min index_day/min etf_day/xdxr/min stock_list/index_list/block \n\
+            命令格式：save day  : save stock_day/xdxr index_day etf_day/xdxr stock_list/index_list \n\
+            命令格式：save min  : save stock_min/xdxr index_min etf_min/xdxr stock_list/index_list \n\
             命令格式: save future: save future_day/min/list \n\
             命令格式: save option: save option_contract_list/option_day_all/option_min_all \n\
             命令格式: save transaction: save stock_transaction and index_transaction (Warning: Large Disk Space Required) \n\
@@ -295,6 +296,7 @@ class CLI(cmd.Cmd):
             命令格式: save ts_daily: save ts_daily \n\
             ------------------------------------------------------------ \n\
             命令格式：save stock_xdxr : 保存日除权除息数据 \n\
+            命令格式：save etf_xdxr : 保存etf日除权除息数据 \n\
             命令格式：save stock_day  : 保存日线数据 \n\
             命令格式：save single_stock_day  : 保存单个股票日线数据 \n\
             命令格式：save stock_min  : 保存分钟线数据 \n\
@@ -383,7 +385,8 @@ class CLI(cmd.Cmd):
                 QA_SU_save_index_day("tdx")
                 # QA_SU_save_index_min('tdx')
                 QA_SU_save_etf_list("tdx")
-                # QA_SU_save_etf_day('tdx')
+                QA_SU_save_etf_day('tdx')
+                QA_SU_save_etf_xdxr("tdx")
                 # QA_SU_save_etf_min('tdx')
                 QA_SU_save_index_list("tdx")
                 QA_SU_save_stock_list("tdx")
@@ -409,6 +412,7 @@ class CLI(cmd.Cmd):
                 # QA_SU_save_index_min('tdx')
                 QA_SU_save_etf_list("tdx")
                 QA_SU_save_etf_day("tdx")
+                QA_SU_save_etf_xdxr("tdx")
                 # QA_SU_save_etf_min('tdx')
                 QA_SU_save_index_list("tdx")
                 QA_SU_save_stock_list("tdx")
@@ -434,6 +438,7 @@ class CLI(cmd.Cmd):
                 QA_SU_save_etf_list("tdx")
                 # QA_SU_save_etf_day('tdx')
                 QA_SU_save_etf_min("tdx")
+                QA_SU_save_etf_xdxr("tdx")
                 QA_SU_save_stock_list("tdx")
                 QA_SU_save_index_list("tdx")
                 # QA_SU_save_stock_block('tdx')
@@ -479,6 +484,7 @@ class CLI(cmd.Cmd):
                 QA_SU_save_etf_list("tdx")
                 QA_SU_save_etf_day("tdx")
                 QA_SU_save_etf_min("tdx")
+                QA_SU_save_etf_xdxr("tdx")
                 QA_SU_save_stock_list("tdx")
                 QA_SU_save_index_list("tdx")
                 QA_SU_save_stock_block("tdx")

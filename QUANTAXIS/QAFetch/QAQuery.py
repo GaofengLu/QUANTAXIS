@@ -550,6 +550,204 @@ def QA_fetch_stock_full(date, format='numpy', collections=DATABASE.stock_day):
             date
         )
 
+def QA_fetch_etf_day(
+    code,
+    start,
+    end,
+    format='numpy',
+    frequence='day',
+    collections=DATABASE.etf_day):
+    """'获取ETF日线'
+
+    Returns:
+        [type] -- [description]
+
+        感谢@几何大佬的提示
+        https://docs.mongodb.com/manual/tutorial/project-fields-from-query-results/#return-the-specified-fields-and-the-id-field-only
+
+    """
+
+    start = str(start)[0:10]
+    end = str(end)[0:10]
+    #code= [code] if isinstance(code,str) else code
+
+    # code checking
+    code = QA_util_code_tolist(code)
+
+    if QA_util_date_valid(end):
+
+        cursor = collections.find(
+            {
+                'code': {
+                    '$in': code
+                },
+                "date_stamp":
+                    {
+                        "$lte": QA_util_date_stamp(end),
+                        "$gte": QA_util_date_stamp(start)
+                    }
+            },
+            {"_id": 0},
+            batch_size=10000
+        )
+        #res=[QA_util_dict_remove_key(data, '_id') for data in cursor]
+
+        res = pd.DataFrame([item for item in cursor])
+        try:
+            res = res.assign(
+                volume=res.vol,
+                date=pd.to_datetime(res.date, utc=False)
+            ).drop_duplicates((['date',
+                                'code'])).query('volume>1').set_index(
+                                    'date',
+                                    drop=False
+                                )
+            res = res.loc[:,
+                          [
+                              'code',
+                              'open',
+                              'high',
+                              'low',
+                              'close',
+                              'volume',
+                              'amount',
+                              'date'
+                          ]]
+        except:
+            res = None
+        if format in ['P', 'p', 'pandas', 'pd']:
+            return res
+        elif format in ['json', 'dict']:
+            return QA_util_to_json_from_pandas(res)
+        # 多种数据格式
+        elif format in ['n', 'N', 'numpy']:
+            return numpy.asarray(res)
+        elif format in ['list', 'l', 'L']:
+            return numpy.asarray(res).tolist()
+        else:
+            print(
+                "QA Error QA_fetch_etf_day format parameter %s is none of  \"P, p, pandas, pd , json, dict , n, N, numpy, list, l, L, !\" "
+                % format
+            )
+            return None
+    else:
+        QA_util_log_info(
+            'QA Error QA_fetch_etf_day data parameter start=%s end=%s is not right'
+            % (start,
+               end)
+        )
+
+def QA_fetch_etf_min(
+    code,
+    start,
+    end,
+    format='numpy',
+    frequence='1min',
+    collections=DATABASE.etf_min):
+    '获取ETF分钟线'
+    if frequence in ['1min', '1m']:
+        frequence = '1min'
+    elif frequence in ['5min', '5m']:
+        frequence = '5min'
+    elif frequence in ['15min', '15m']:
+        frequence = '15min'
+    elif frequence in ['30min', '30m']:
+        frequence = '30min'
+    elif frequence in ['60min', '60m']:
+        frequence = '60min'
+    else:
+        print(
+            "QA Error QA_fetch_stock_min parameter frequence=%s is none of 1min 1m 5min 5m 15min 15m 30min 30m 60min 60m"
+            % frequence
+        )
+
+    _data = []
+    # code checking
+    code = QA_util_code_tolist(code)
+
+    cursor = collections.find(
+        {
+            'code': {
+                '$in': code
+            },
+            "time_stamp":
+                {
+                    "$gte": QA_util_time_stamp(start),
+                    "$lte": QA_util_time_stamp(end)
+                },
+            'type': frequence
+        },
+        {"_id": 0},
+        batch_size=10000
+    )
+
+    res = pd.DataFrame([item for item in cursor])
+    try:
+        res = res.assign(
+            volume=res.vol,
+            datetime=pd.to_datetime(res.datetime, utc=False)
+        ).query('volume>1').drop_duplicates(['datetime',
+                                             'code']).set_index(
+                                                 'datetime',
+                                                 drop=False
+                                             )
+        # return res
+    except:
+        res = None
+    if format in ['P', 'p', 'pandas', 'pd']:
+        return res
+    elif format in ['json', 'dict']:
+        return QA_util_to_json_from_pandas(res)
+    # 多种数据格式
+    elif format in ['n', 'N', 'numpy']:
+        return numpy.asarray(res)
+    elif format in ['list', 'l', 'L']:
+        return numpy.asarray(res).tolist()
+    else:
+        print(
+            "QA Error QA_fetch_etf_min format parameter %s is none of  \"P, p, pandas, pd , json, dict , n, N, numpy, list, l, L, !\" "
+            % format
+        )
+        return None
+
+def QA_fetch_etf_adj(
+    code,
+    start,
+    end,
+    format='pd',
+    collections=DATABASE.etf_adj):
+    """获取ETF复权系数 ADJ
+
+    """
+
+    start = str(start)[0:10]
+    end = str(end)[0:10]
+    #code= [code] if isinstance(code,str) else code
+
+    # code checking
+    code = QA_util_code_tolist(code)
+
+    if QA_util_date_valid(end):
+
+        cursor = collections.find(
+            {
+                'code': {
+                    '$in': code
+                },
+                "date": {
+                    "$lte": end,
+                    "$gte": start
+                }
+            },
+            {"_id": 0},
+            batch_size=10000
+        )
+        #res=[QA_util_dict_remove_key(data, '_id') for data in cursor]
+
+        res = pd.DataFrame([item for item in cursor])
+        res.date = pd.to_datetime(res.date, utc=False)
+        return res.set_index('date', drop=False)
+
 
 def QA_fetch_index_day(
     code,
@@ -944,6 +1142,23 @@ def QA_fetch_ctp_tick(
 
 def QA_fetch_stock_xdxr(code, format='pd', collections=DATABASE.stock_xdxr):
     '获取股票除权信息/数据库'
+    code = QA_util_code_tolist(code)
+    data = pd.DataFrame(
+        [
+            item for item in
+            collections.find({'code': {
+                '$in': code
+            }},
+                             batch_size=10000)
+        ]
+    ).drop(['_id'],
+           axis=1)
+    data['date'] = pd.to_datetime(data['date'], utc=False)
+    return data.set_index('date', drop=False)
+
+
+def QA_fetch_etf_xdxr(code, format='pd', collections=DATABASE.etf_xdxr):
+    '获取ETF除权信息/数据库'
     code = QA_util_code_tolist(code)
     data = pd.DataFrame(
         [

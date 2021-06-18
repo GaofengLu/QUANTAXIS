@@ -82,8 +82,8 @@ from QUANTAXIS.QAUtil import (
     QA_util_to_json_from_pandas,
     trade_date_sse
 )
-from QUANTAXIS.QAData.data_fq import _QA_data_stock_to_fq
-from QUANTAXIS.QAFetch.QAQuery import QA_fetch_stock_day
+from QUANTAXIS.QAData.data_fq import _QA_data_stock_to_fq, _QA_data_etf_to_fq
+from QUANTAXIS.QAFetch.QAQuery import QA_fetch_stock_day, QA_fetch_index_day
 from QUANTAXIS.QAUtil import Parallelism
 from QUANTAXIS.QAFetch.QATdx import ping, get_ip_list_by_multi_process_ping, stock_ip_list
 from multiprocessing import cpu_count
@@ -1414,7 +1414,7 @@ def QA_SU_save_single_etf_day(code : str, client=DATABASE, ui_log=None):
     """
 
     #__index_list = QA_fetch_get_stock_list('etf')
-    coll = client.index_day
+    coll = client.etf_day
     coll.create_index(
         [('code',
           pymongo.ASCENDING),
@@ -1488,7 +1488,7 @@ def QA_SU_save_etf_day(client=DATABASE, ui_log=None, ui_progress=None):
     """
 
     __index_list = QA_fetch_get_stock_list('etf')
-    coll = client.index_day
+    coll = client.etf_day
     coll.create_index(
         [('code',
           pymongo.ASCENDING),
@@ -1573,6 +1573,100 @@ def QA_SU_save_etf_day(client=DATABASE, ui_log=None, ui_progress=None):
         QA_util_log_info(' ERROR CODE \n ', ui_log=ui_log)
         QA_util_log_info(err, ui_log=ui_log)
 
+def QA_SU_save_etf_xdxr(client=DATABASE, ui_log=None, ui_progress=None):
+    """[summary]
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    etf_list = QA_fetch_get_stock_list('etf').code.unique().tolist()
+
+    try:
+        coll = client.etf_xdxr
+        coll.create_index(
+            [('code',
+              pymongo.ASCENDING),
+             ('date',
+              pymongo.ASCENDING)],
+            unique=True
+        )
+        coll_adj = client.etf_adj
+        coll_adj.create_index(
+            [('code',
+                pymongo.ASCENDING),
+                ('date',
+                pymongo.ASCENDING)],
+            unique=True
+        )
+    except:
+        client.drop_collection('etf_xdxr')
+        coll = client.etf_xdxr
+        coll.create_index(
+            [('code',
+              pymongo.ASCENDING),
+             ('date',
+              pymongo.ASCENDING)],
+            unique=True
+        )
+        client.drop_collection('etf_adj')
+        coll_adj = client.stock_adj
+        coll_adj.create_index(
+            [('code',
+                pymongo.ASCENDING),
+                ('date',
+                pymongo.ASCENDING)],
+            unique=True
+        )
+
+    err = []
+
+    def __saving_work(code, coll):
+        QA_util_log_info(
+            '##JOB02 Now Saving XDXR INFO ==== {}'.format(str(code)),
+            ui_log=ui_log
+        )
+        try:
+            xdxr  = QA_fetch_get_stock_xdxr(str(code))
+            try:
+                coll.insert_many(
+                    QA_util_to_json_from_pandas(xdxr),
+                    ordered=False
+                )
+            except:
+                pass
+            try:
+                data = QA_fetch_index_day(str(code), '1990-01-01',str(datetime.date.today()), 'pd')
+                qfq = _QA_data_etf_to_fq(data, xdxr, 'qfq')
+                qfq = qfq.assign(date=qfq.date.apply(lambda x: str(x)[0:10]))
+                adjdata = QA_util_to_json_from_pandas(qfq.loc[:, ['date','code', 'adj']])
+                coll_adj.delete_many({'code': code})
+                #print(adjdata)
+                coll_adj.insert_many(adjdata)
+            except Exception as e:
+                print(e)
+
+        except Exception as e:
+            print(e)
+            err.append(str(code))
+
+    for i_ in range(len(etf_list)):
+        QA_util_log_info(
+            'The {} of Total {}'.format(i_,
+                                        len(etf_list)),
+            ui_log=ui_log
+        )
+        strLogInfo = 'DOWNLOAD PROGRESS {} '.format(
+            str(float(i_ / len(etf_list) * 100))[0:4] + '%'
+        )
+        intLogProgress = int(float(i_ / len(etf_list) * 100))
+        QA_util_log_info(
+            strLogInfo,
+            ui_log=ui_log,
+            ui_progress=ui_progress,
+            ui_progress_int_value=intLogProgress
+        )
+        __saving_work(etf_list[i_], coll)
 
 def QA_SU_save_etf_min(client=DATABASE, ui_log=None, ui_progress=None):
     """save etf_min
@@ -1582,7 +1676,7 @@ def QA_SU_save_etf_min(client=DATABASE, ui_log=None, ui_progress=None):
     """
 
     __index_list = QA_fetch_get_stock_list('etf')
-    coll = client.index_min
+    coll = client.etf_min
     coll.create_index(
         [
             ('code',
@@ -7866,4 +7960,5 @@ if __name__ == '__main__':
     # QA_SU_save_usstock_list()
     # QA_SU_save_single_usstock_day(code ='YDEC')
     # QA_SU_save_usstock_day()
-    QA_SU_save_single_usstock_min(code ='YDEC')
+    # QA_SU_save_single_usstock_min(code ='YDEC')
+    QA_SU_save_etf_xdxr()

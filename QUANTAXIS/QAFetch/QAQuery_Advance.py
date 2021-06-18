@@ -31,6 +31,8 @@ from pandas import DataFrame
 from QUANTAXIS.QAData import (
     QA_DataStruct_Index_day,
     QA_DataStruct_Index_min,
+    QA_DataStruct_ETF_day,
+    QA_DataStruct_ETF_min,
     QA_DataStruct_Future_day,
     QA_DataStruct_Future_min,
     QA_DataStruct_Stock_block,
@@ -46,6 +48,8 @@ from QUANTAXIS.QAData import (
 from QUANTAXIS.QAFetch.QAQuery import (
     QA_fetch_index_day,
     QA_fetch_index_min,
+    QA_fetch_etf_day,
+    QA_fetch_etf_min,
     QA_fetch_index_transaction,
     QA_fetch_stock_day,
     QA_fetch_stock_full,
@@ -244,6 +248,123 @@ def QA_fetch_stock_day_full_adv(date):
         #     print("QA Error QA_fetch_stock_day_full set index 'date, code' return None")
         return QA_DataStruct_Stock_day(res_set_index)
 
+def QA_fetch_etf_day_adv(
+    code,
+    start='all',
+    end=None,
+    if_drop_index=True,
+                                   # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    collections=DATABASE.etf_day
+):
+    '''
+
+    :param code:  股票代码
+    :param start: 开始日期
+    :param end:   结束日期
+    :param if_drop_index:
+    :param collections: 默认数据库
+    :return: 如果ETF代码不存 或者开始结束日期不存在 在返回 None ，合法返回 QA_DataStruct_ETF_day 数据
+    '''
+    '获取ETF日线'
+    end = start if end is None else end
+    start = str(start)[0:10]
+    end = str(end)[0:10]
+
+    if start == 'all':
+        start = '1990-01-01'
+        end = str(datetime.date.today())
+
+    res = QA_fetch_etf_day(code, start, end, format='pd', collections= collections)
+    if res is None:
+        # 🛠 todo 报告是代码不合法，还是日期不合法
+        print(
+            "QA Error QA_fetch_etf_day_adv parameter code=%s , start=%s, end=%s call QA_fetch_etf_day return None"
+            % (code,
+               start,
+               end)
+        )
+        return None
+    else:
+        res_reset_index = res.set_index(['date', 'code'], drop=if_drop_index)
+        # if res_reset_index is None:
+        #     print("QA Error QA_fetch_stock_day_adv set index 'datetime, code' return None")
+        #     return None
+        return QA_DataStruct_ETF_day(res_reset_index)
+
+
+def QA_fetch_etf_min_adv(
+    code,
+    start,
+    end=None,
+    frequence='1min',
+    if_drop_index=True,
+                                                                                                                              # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    collections=DATABASE.etf_min
+):
+    '''
+    '获取ETF分钟线'
+    :param code:  字符串str eg 600085
+    :param start: 字符串str 开始日期 eg 2011-01-01
+    :param end:   字符串str 结束日期 eg 2011-05-01
+    :param frequence: 字符串str 分钟线的类型 支持 1min 1m 5min 5m 15min 15m 30min 30m 60min 60m 类型
+    :param if_drop_index: Ture False ， dataframe drop index or not
+    :param collections: mongodb 数据库
+    :return: QA_DataStruct_ETF_min 类型
+    '''
+    if frequence in ['1min', '1m']:
+        frequence = '1min'
+    elif frequence in ['5min', '5m']:
+        frequence = '5min'
+    elif frequence in ['15min', '15m']:
+        frequence = '15min'
+    elif frequence in ['30min', '30m']:
+        frequence = '30min'
+    elif frequence in ['60min', '60m']:
+        frequence = '60min'
+    else:
+        print(
+            "QA Error QA_fetch_etf_min_adv parameter frequence=%s is none of 1min 1m 5min 5m 15min 15m 30min 30m 60min 60m"
+            % frequence
+        )
+        return None
+
+    # __data = [] 未使用
+
+    end = start if end is None else end
+    if len(start) == 10:
+        start = '{} 09:30:00'.format(start)
+
+    if len(end) == 10:
+        end = '{} 15:00:00'.format(end)
+
+    if start == end:
+        # 🛠 todo 如果相等，根据 frequence 获取开始时间的 时间段 QA_fetch_etf_min， 不支持start end是相等的
+        print(
+            "QA Error QA_fetch_etf_min_adv parameter code=%s , start=%s, end=%s is equal, should have time span! "
+            % (code,
+               start,
+               end)
+        )
+        return None
+
+    # 🛠 todo 报告错误 如果开始时间 在 结束时间之后
+
+    res = QA_fetch_etf_min(code, start, end, format='pd', frequence=frequence, collections= collections)
+    if res is None:
+        print(
+            "QA Error QA_fetch_etf_min_adv parameter code=%s , start=%s, end=%s frequence=%s call QA_fetch_etf_min return None"
+            % (code,
+               start,
+               end,
+               frequence)
+        )
+        return None
+    else:
+        res_set_index = res.set_index(['datetime', 'code'], drop=if_drop_index)
+        # if res_set_index is None:
+        #     print("QA Error QA_fetch_stock_min_adv set index 'datetime, code' return None")
+        #     return None
+        return QA_DataStruct_ETF_min(res_set_index)
 
 def QA_fetch_index_day_adv(
     code,
