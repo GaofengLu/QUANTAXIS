@@ -27,8 +27,12 @@ import json
 import re
 import time
 import pymongo
-
+import pandas as pd
 import tushare as ts
+from QUANTAXIS.QAUtil import Parallelism_Thread
+from QUANTAXIS.QAUtil.QACache import QA_util_cache
+
+from multiprocessing import cpu_count
 
 from QUANTAXIS.QAFetch.QATushare import (
     QA_fetch_get_stock_day,
@@ -45,6 +49,7 @@ from QUANTAXIS.QAUtil import (
     QA_util_to_json_from_pandas,
     trade_date_sse,
     QA_util_get_real_date,
+    QA_util_get_last_day,
     QA_util_get_next_day
 )
 from QUANTAXIS.QAUtil.QASetting import DATABASE
@@ -61,10 +66,28 @@ def date_conver_to_new_format(date_str):
     )
 
 
+def get_coll(client=None):
+    cache = QA_util_cache()
+    results = cache.get('tushare_coll')
+    if results:
+        return results
+    else:
+        _coll = client.stock_day_ts
+        _coll.create_index(
+            [('code',
+              pymongo.ASCENDING),
+             ('date_stamp',
+              pymongo.ASCENDING)]
+        )
+        cache.set('tushare_coll', _coll, age=86400)
+        return _coll
+
 # TODO: 和sav_tdx.py中的now_time一起提取成公共函数
+
+
 def now_time():
     real_date = str(QA_util_get_real_date(str(datetime.date.today() -
-                                          datetime.timedelta(days=1)),
+                                              datetime.timedelta(days=1)),
                                           trade_date_sse, -1))
     str_now = real_date + ' 17:00:00' if datetime.datetime.now().hour < 15 \
         else str(QA_util_get_real_date(str(datetime.date.today()),
@@ -74,9 +97,9 @@ def now_time():
 
 
 def QA_save_stock_day_all(client=DATABASE):
-    df = ts.get_stock_basics()
+    stock_list = QA_fetch_get_stock_list()
     __coll = client.stock_day
-    __coll.ensure_index('code')
+    __coll.create_index('code')
 
     def saving_work(i):
         QA_util_log_info('Now Saving ==== %s' % (i))
@@ -88,16 +111,16 @@ def QA_save_stock_day_all(client=DATABASE):
             print(e)
             QA_util_log_info('error in saving ==== %s' % str(i))
 
-    for i_ in range(len(df.index)):
-        QA_util_log_info('The %s of Total %s' % (i_, len(df.index)))
+    for i_ in range(len(stock_list)):
+        QA_util_log_info('The %s of Total %s' % (i_, len(stock_list)))
         QA_util_log_info(
             'DOWNLOAD PROGRESS %s ' %
-            str(float(i_ / len(df.index) * 100))[0:4] + '%'
+            str(float(i_ / len(stock_list) * 100))[0:4] + '%'
         )
-        saving_work(df.index[i_])
+        saving_work(stock_list[i_])
 
-    saving_work('hs300')
-    saving_work('sz50')
+    # saving_work('hs300')
+    # saving_work('sz50')
 
 
 def QA_SU_save_stock_list(client=DATABASE):
@@ -199,7 +222,7 @@ def QA_SU_save_stock_info(client=DATABASE):
 
 
 def QA_save_stock_day_all_bfq(client=DATABASE):
-    df = ts.get_stock_basics()
+    df = QA_fetch_get_stock_list()
 
     __coll = client.stock_day_bfq
     __coll.ensure_index('code')
@@ -214,20 +237,20 @@ def QA_save_stock_day_all_bfq(client=DATABASE):
             print(e)
             QA_util_log_info('error in saving ==== %s' % str(i))
 
-    for i_ in range(len(df.index)):
-        QA_util_log_info('The %s of Total %s' % (i_, len(df.index)))
+    for i_ in range(len(df)):
+        QA_util_log_info('The %s of Total %s' % (i_, len(df)))
         QA_util_log_info(
             'DOWNLOAD PROGRESS %s ' %
-            str(float(i_ / len(df.index) * 100))[0:4] + '%'
+            str(float(i_ / len(df) * 100))[0:4] + '%'
         )
-        saving_work(df.index[i_])
+        saving_work(df[i_])
 
-    saving_work('hs300')
-    saving_work('sz50')
+    # saving_work('hs300')
+    # saving_work('sz50')
 
 
 def QA_save_stock_day_with_fqfactor(client=DATABASE):
-    df = ts.get_stock_basics()
+    df = QA_fetch_get_stock_list()
 
     __coll = client.stock_day
     __coll.ensure_index('code')
@@ -238,7 +261,7 @@ def QA_save_stock_day_with_fqfactor(client=DATABASE):
             data_hfq = QA_fetch_get_stock_day(
                 i,
                 start='1990-01-01',
-                if_fq='02',
+                if_fq='bfq',
                 type_='pd'
             )
             data_json = QA_util_to_json_from_pandas(data_hfq)
@@ -247,16 +270,16 @@ def QA_save_stock_day_with_fqfactor(client=DATABASE):
             print(e)
             QA_util_log_info('error in saving ==== %s' % str(i))
 
-    for i_ in range(len(df.index)):
-        QA_util_log_info('The %s of Total %s' % (i_, len(df.index)))
+    for i_ in range(len(df)):
+        QA_util_log_info('The %s of Total %s' % (i_, len(df)))
         QA_util_log_info(
             'DOWNLOAD PROGRESS %s ' %
-            str(float(i_ / len(df.index) * 100))[0:4] + '%'
+            str(float(i_ / len(df) * 100))[0:4] + '%'
         )
-        saving_work(df.index[i_])
+        saving_work(df[i_])
 
-    saving_work('hs300')
-    saving_work('sz50')
+    # saving_work('hs300')
+    # saving_work('sz50')
 
     QA_util_log_info('Saving Process has been done !')
     return 0
@@ -302,70 +325,191 @@ def QA_save_lhb(client=DATABASE):
             continue
 
 
-def _saving_work(code, coll_stock_day, ui_log=None, err=[]):
-    try:
-        QA_util_log_info(
-            '##JOB01 Now Saving STOCK_DAY==== {}'.format(str(code)),
-            ui_log
-        )
+class QA_SU_save_day_parallelism_thread(Parallelism_Thread):
+    def __init__(self, processes=cpu_count(), client=DATABASE, ui_log=None,
+                 ui_progress=None):
+        super(QA_SU_save_day_parallelism_thread, self).__init__(processes)
+        self.client = client
+        self.ui_log = ui_log
+        self.ui_progress = ui_progress
+        self.err = []
+        self.__total_counts = 0
+        self.__code_counts = 0
 
-        # 首选查找数据库 是否 有 这个代码的数据
-        ref = coll_stock_day.find({'code': str(code)[0:6]})
-        end_date = now_time()
+    @property
+    def code_counts(self):
+        return self.__code_counts
 
-        # 当前数据库已经包含了这个代码的数据， 继续增量更新
-        # 加入这个判断的原因是因为如果股票是刚上市的 数据库会没有数据 所以会有负索引问题出现
-        if ref.count() > 0:
+    @code_counts.setter
+    def code_counts(self, value):
+        self.__code_counts = value
 
-            # 接着上次获取的日期继续更新
-            start_date_new_format = ref[ref.count() - 1]['trade_date']
-            start_date = ref[ref.count() - 1]['date']
+    @property
+    def total_counts(self):
+        return self.__total_counts
 
-            QA_util_log_info(
-                'UPDATE_STOCK_DAY \n Trying updating {} from {} to {}'
-                .format(code,
-                        start_date_new_format,
-                        end_date),
-                ui_log
-            )
-            if start_date_new_format != end_date:
-                coll_stock_day.insert_many(
-                    QA_util_to_json_from_pandas(
-                        QA_fetch_get_stock_day(
-                            str(code),
-                            date_conver_to_new_format(
-                                QA_util_get_next_day(start_date)
-                            ),
-                            end_date,
-                            'bfq'
-                        )
-                    )
-                )
-
-        # 当前数据库中没有这个代码的股票数据， 从1990-01-01 开始下载所有的数据
+    @total_counts.setter
+    def total_counts(self, value):
+        if value > 0:
+            self.__total_counts = value
         else:
-            start_date = '19900101'
+            raise Exception('value must be great than zero.')
+
+    def loginfo(self, code, listCounts=10):
+        if len(self._loginfolist) < listCounts:
+            self._loginfolist.append(code)
+        else:
+            str = ''
+            for i in range(len(self._loginfolist)):
+                str += + self._loginfolist[i] + ' '
+            str += code
             QA_util_log_info(
-                'UPDATE_STOCK_DAY \n Trying updating {} from {} to {}'
-                .format(code,
-                        start_date,
-                        end_date),
-                ui_log
+                '##JOB02 Now Saved STOCK_DAY==== {}'.format(
+                ),
+                self.ui_log
             )
-            if start_date != end_date:
-                coll_stock_day.insert_many(
-                    QA_util_to_json_from_pandas(
-                        QA_fetch_get_stock_day(
-                            str(code),
-                            start_date,
-                            end_date,
-                            'bfq'
-                        )
-                    )
+            self._loginfolist.clear()
+
+
+class QA_SU_save_stock_day_parallelism(QA_SU_save_day_parallelism_thread):
+    def __saving_work(self, code):
+        try:
+            QA_util_log_info(
+                '##JOB01 Now Saving STOCK_DAY==== {}'.format(str(code)),
+                self.ui_log
+            )
+
+            time.sleep(0.1)
+
+            # 首选查找数据库 是否 有 这个代码的数据
+            search_cond = {'code': str(code)[0:6]}
+            ref = get_coll(self.client).find(search_cond)
+            ref_count = get_coll(self.client).count_documents(search_cond)
+            end_date = now_time()
+
+            # 当前数据库已经包含了这个代码的数据， 继续增量更新
+            # 加入这个判断的原因是因为如果股票是刚上市的 数据库会没有数据 所以会有负索引问题出现
+            if ref_count > 0:
+                # 接着上次获取的日期继续更新
+                start_date_new_format = ref[ref_count - 1]['trade_date']
+                start_date = ref[ref_count - 1]['date']
+
+                QA_util_log_info(
+                    'UPDATE_STOCK_DAY: Trying updating {} {} from {} to {}'
+                    .format(ref_count, code,
+                            start_date_new_format,
+                            end_date),
+                    self.ui_log
                 )
-    except Exception as e:
-        print(e)
-        err.append(str(code))
+
+                if start_date_new_format != end_date:
+                    df = QA_fetch_get_stock_day(
+                        str(code),
+                        date_conver_to_new_format(
+                            QA_util_get_next_day(start_date)
+                        ),
+                        end_date,
+                        'bfq'
+                    )
+                    if not (df is None) and len(df) > 0:
+                        get_coll(self.client).insert_many(
+                            QA_util_to_json_from_pandas(df)
+                        )
+                    else:
+                        QA_util_log_info(
+                            'UPDATE_STOCK_DAY: Trying updating {} {} from {} to {} ---- No Data'
+                            .format(ref_count, code,
+                                    start_date_new_format,
+                                    end_date),
+                            self.ui_log
+                        )
+
+            # 当前数据库中没有这个代码的股票数据， 从1990-01-01 开始下载所有的数据
+            # 一次只返回 5000 条，所以有些股票得获取两次
+            else:
+                start_date = '19900101'
+                QA_util_log_info(
+                    'FETCH_ALL_STOCK_DAY: Trying fetching all data {} from {} to {}'
+                    .format(code,
+                            start_date,
+                            end_date),
+                    self.ui_log
+                )
+                if start_date != end_date:
+                    # 第一次获取
+                    df = QA_fetch_get_stock_day(
+                        str(code),
+                        start_date,
+                        end_date,
+                        'bfq'
+                    )
+
+                    if not (df is None):
+                        if len(df) >= 5000:
+                            again_date = QA_util_get_last_day(df['date'].min())
+                            QA_util_log_info(
+                                'FETCH_ALL_STOCK_DAY: Trying updating again {} from {} to {}'
+                                .format(code,
+                                        start_date,
+                                        again_date),
+                                self.ui_log
+                            )
+                            df2 = QA_fetch_get_stock_day(
+                                str(code),
+                                start_date,
+                                again_date,
+                                'bfq'
+                            )
+
+                            df = df.append(df2)
+
+                        get_coll(self.client).insert_many(
+                            QA_util_to_json_from_pandas(df)
+                        )
+                    else:
+                        QA_util_log_info(
+                            'FETCH_ALL_STOCK_DAY: Trying fetching all data {} from {} to {} ---- No Data'
+                            .format(code,
+                                    start_date,
+                                    end_date),
+                            self.ui_log
+                        )
+        except Exception as e:
+            print(e)
+            self.err.append(str(code))
+
+    def do_working(self, code):
+        if self.total_counts > 0:
+            self.code_counts += 1
+            QA_util_log_info(
+                'The {} of Total {}'.format(self.code_counts,
+                                            self.total_counts),
+                ui_log=self.ui_log
+            )
+            strLogProgress = 'DOWNLOAD PROGRESS {0:.2f}% '.format(
+                self.code_counts / self.total_counts * 100
+            )
+
+            intLogProgress = int(
+                float(self.code_counts / self.total_counts * 10000.0))
+            QA_util_log_info(
+                strLogProgress,
+                ui_log=self.ui_log,
+                ui_progress=self.ui_progress,
+                ui_progress_int_value=intLogProgress
+            )
+        self.__saving_work(code)
+        return code
+
+    def complete(self, result):
+        if len(self.err) < 1:
+            QA_util_log_info('SUCCESS', ui_log=self.ui_log)
+        else:
+            QA_util_log_info('ERROR CODE: ', ui_log=self.ui_log)
+            QA_util_log_info(self.err, ui_log=self.ui_log)
+
+
+max_processes = 10  # 第一次获取可以用全部的32线程，后续增量更新就用10个线程好了
 
 
 def QA_SU_save_stock_day(client=DATABASE, ui_log=None, ui_progress=None):
@@ -378,49 +522,20 @@ def QA_SU_save_stock_day(client=DATABASE, ui_log=None, ui_progress=None):
     :param ui_progress_int_value: 给GUI qt 界面使用
     '''
     stock_list = QA_fetch_get_stock_list()
-    # TODO: 重命名stock_day_ts
-    coll_stock_day = client.stock_day_ts
-    coll_stock_day.create_index(
-        [("code",
-          pymongo.ASCENDING),
-         ("date_stamp",
-          pymongo.ASCENDING)]
-    )
-
-    err = []
     num_stocks = len(stock_list)
-    for index, ts_code in enumerate(stock_list):
-        QA_util_log_info('The {} of Total {}'.format(index, num_stocks))
 
-        strProgressToLog = 'DOWNLOAD PROGRESS {} {}'.format(
-            str(float(index / num_stocks * 100))[0:4] + '%',
-            ui_log
-        )
-        intProgressToLog = int(float(index / num_stocks * 100))
-        QA_util_log_info(
-            strProgressToLog,
-            ui_log=ui_log,
-            ui_progress=ui_progress,
-            ui_progress_int_value=intProgressToLog
-        )
-        _saving_work(ts_code,
-                     coll_stock_day,
-                     ui_log=ui_log,
-                     err=err)
-        # 日线行情每分钟内最多调取200次，超过5000积分无限制
-        time.sleep(0.005)
+    ps = QA_SU_save_stock_day_parallelism(
+        processes=max_processes if num_stocks >= max_processes else num_stocks,
+        client=client, ui_log=ui_log)
 
-    if len(err) < 1:
-        QA_util_log_info('SUCCESS save stock day ^_^', ui_log)
-    else:
-        QA_util_log_info('ERROR CODE \n ', ui_log)
-        QA_util_log_info(err, ui_log)
+    ps.total_counts = num_stocks
+    ps.run(stock_list)
 
 
 def QA_SU_save_stock_block(client=DATABASE, ui_log=None, ui_progress=None):
     """
     Tushare的版块数据
-    
+
     Returns:
         [type] -- [description]
     """
@@ -433,7 +548,7 @@ def QA_SU_save_stock_block(client=DATABASE, ui_log=None, ui_progress=None):
             QA_util_to_json_from_pandas(csindex500))
         QA_util_log_info('SUCCESS save stock block ^_^', ui_log)
     except Exception as e:
-        QA_util_log_info('ERROR CODE \n ', ui_log)
+        QA_util_log_info('ERROR CODE: ', ui_log)
         QA_util_log_info(e, ui_log)
 
 
@@ -442,3 +557,4 @@ if __name__ == '__main__':
     client = MongoClient('localhost', 27017)
     db = client['quantaxis']
     QA_SU_save_stock_day(client=db)
+    # print(QA_fetch_get_stock_day('000001.SZ', start='20211021'))

@@ -136,7 +136,8 @@ class CLI(cmd.Cmd):
         now_path = os.getcwd()
         # project_dir = os.path.dirname(os.path.abspath(__file__))
 
-        data = requests.get("https://codeload.github.com/quantaxis/QADemo/zip/master")
+        data = requests.get(
+            "https://codeload.github.com/quantaxis/QADemo/zip/master")
         with open("{}{}QADEMO.zip".format(now_path, os.sep), "wb") as code:
             code.write(data.content)
 
@@ -678,7 +679,7 @@ class CLI(cmd.Cmd):
                             )
                     else:
                         try:
-                            eval("QA_SU_save_%s('tdx')" % (i))
+                            eval("QA_SU_save_%s('ts')" % (i))
                         except:
                             print("❌命令格式不正确！")
                             self.print_save_usage()

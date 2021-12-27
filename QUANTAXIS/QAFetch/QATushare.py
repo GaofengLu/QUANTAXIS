@@ -123,31 +123,28 @@ def _get_subscription_type(if_fq):
     elif str(if_fq) in ['hfq', '02']:
         if_fq = 'hfq'
     elif str(if_fq) in ['bfq', '00']:
-        if_fq = None
+        if_fq = 'bfq'
     else:
         QA_util_log_info('wrong with fq_factor! using qfq')
         if_fq = 'qfq'
     return if_fq
 
 
-def QA_fetch_get_stock_day(name, start='', end='', if_fq='qfq', type_='pd'):
+def QA_fetch_get_stock_day(name, start='', end='', if_fq='bfq', type_='pd'):
 
     def fetch_data():
         data = None
         try:
-            time.sleep(0.002)
             pro = get_pro()
             data = ts.pro_bar(
                 api=pro,
                 ts_code=str(name),
-                asset='E',
                 adj=_get_subscription_type(if_fq),
                 start_date=start,
                 end_date=end,
-                freq='D',
-                factors=['tor',
-                         'vr']
-            ).sort_index()
+                factors=['tor', 'vr'],
+                adjfactor=True,
+            )
             print('fetch done: ' + str(name))
         except Exception as e:
             print(e)
@@ -157,18 +154,22 @@ def QA_fetch_get_stock_day(name, start='', end='', if_fq='qfq', type_='pd'):
         return data
 
     data = fetch_data()
-
-    data['date_stamp'] = data['trade_date'].apply(lambda x: cover_time(x))
-    data['code'] = data['ts_code'].apply(lambda x: str(x)[0:6])
-    data['fqtype'] = if_fq
-    if type_ in ['json']:
-        data_json = QA_util_to_json_from_pandas(data)
-        return data_json
-    elif type_ in ['pd', 'pandas', 'p']:
-        data['date'] = pd.to_datetime(data['trade_date'], utc=False, format='%Y%m%d')
-        data = data.set_index('date', drop=False)
-        data['date'] = data['date'].apply(lambda x: str(x)[0:10])
-        return data
+    if not (data is None) and len(data) > 0:
+        data = data.sort_index()
+        data['date_stamp'] = data['trade_date'].apply(lambda x: cover_time(x))
+        data['code'] = data['ts_code'].apply(lambda x: str(x)[0:6])
+        data['fqtype'] = if_fq
+        if type_ in ['json']:
+            data_json = QA_util_to_json_from_pandas(data)
+            return data_json
+        elif type_ in ['pd', 'pandas', 'p']:
+            data['date'] = pd.to_datetime(
+                data['trade_date'], utc=False, format='%Y%m%d')
+            data = data.set_index('date', drop=False)
+            data['date'] = data['date'].apply(lambda x: str(x)[0:10])
+            return data
+    else:
+        return None
 
 
 def QA_fetch_get_stock_realtime():
@@ -203,7 +204,8 @@ def QA_fetch_get_stock_time_to_market():
 
 
 def QA_fetch_get_trade_date(end, exchange):
-    data = ts.trade_cal()
+    pro = ts.pro_api()
+    data = pro.trade_cal()
     da = data[data.isOpen > 0]
     data_json = QA_util_to_json_from_pandas(data)
     message = []
@@ -232,7 +234,7 @@ def QA_fetch_get_stock_money():
 
 def QA_fetch_get_stock_block():
     """Tushare的版块数据
-    
+
     Returns:
         [type] -- [description]
     """
@@ -249,8 +251,11 @@ def QA_fetch_get_stock_block():
 
 # test
 
+
 # print(get_stock_day("000001",'2001-01-01','2010-01-01'))
 # print(get_stock_tick("000001.SZ","2017-02-21"))
 if __name__ == '__main__':
     df = QA_fetch_get_stock_list()
+    df = QA_fetch_get_stock_day(
+        '600000.sh', start='19910301', if_fq='bfq')
     print(df)
