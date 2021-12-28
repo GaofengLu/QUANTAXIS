@@ -295,6 +295,7 @@ class CLI(cmd.Cmd):
             命令格式: save ts_all: save ts_industry and ts_namechange and ts_stock_basic ts_daily_basic and ts_financial_reports \n\
             命令格式: save ts_financial: save ts_financial_reports \n\
             命令格式: save ts_daily: save ts_daily \n\
+            命令格式: save ts_stock_day: save ts_stock_day 获取tushare日线数据\n\
             ------------------------------------------------------------ \n\
             命令格式：save stock_xdxr : 保存日除权除息数据 \n\
             命令格式：save etf_xdxr : 保存etf日除权除息数据 \n\
@@ -528,6 +529,9 @@ class CLI(cmd.Cmd):
                         {"username": "admin", "password": "admin"}
                     )
                 QA_ts_update_daily_basic()
+            elif len(arg) == 1 and arg[0] == 'ts_stock_day':
+                QA_SU_save_stock_day('ts')
+
             elif len(arg) == 1 and arg[0] == "binance":
                 QA_SU_save_binance_symbol()
                 QA_SU_save_binance_1day()
@@ -679,7 +683,7 @@ class CLI(cmd.Cmd):
                             )
                     else:
                         try:
-                            eval("QA_SU_save_%s('ts')" % (i))
+                            eval("QA_SU_save_%s('tdx')" % (i))
                         except:
                             print("❌命令格式不正确！")
                             self.print_save_usage()

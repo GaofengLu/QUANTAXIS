@@ -88,7 +88,7 @@ def QA_fetch_stock_day(
                     {
                         "$lte": QA_util_date_stamp(end),
                         "$gte": QA_util_date_stamp(start)
-                    }
+                }
             },
             {"_id": 0},
             batch_size=10000
@@ -104,7 +104,7 @@ def QA_fetch_stock_day(
                                 'code'])).query('volume>1').set_index(
                                     'date',
                                     drop=False
-                                )
+            )
             res = res.loc[:,
                           [
                               'code',
@@ -114,7 +114,8 @@ def QA_fetch_stock_day(
                               'close',
                               'volume',
                               'amount',
-                              'date'
+                              'date',
+                              'adj_factor'
                           ]]
         except:
             res = None
@@ -219,7 +220,7 @@ def QA_fetch_stock_min(
                 {
                     "$gte": QA_util_time_stamp(start),
                     "$lte": QA_util_time_stamp(end)
-                },
+            },
             'type': frequence
         },
         {"_id": 0},
@@ -235,7 +236,7 @@ def QA_fetch_stock_min(
                                              'code']).set_index(
                                                  'datetime',
                                                  drop=False
-                                             )
+        )
         # return res
     except:
         res = None
@@ -286,7 +287,7 @@ def QA_fetch_stock_transaction(
                 {
                     "$gte": QA_util_time_stamp(start),
                     "$lte": QA_util_time_stamp(end)
-                },
+            },
             "type": frequence
         },
         {"_id": 0},
@@ -302,7 +303,7 @@ def QA_fetch_stock_transaction(
                                              'code']).set_index(
                                                  'datetime',
                                                  drop=False
-                                             )
+        )
         # return res
     except:
         res = None
@@ -353,7 +354,7 @@ def QA_fetch_index_transaction(
                 {
                     "$gte": QA_util_time_stamp(start),
                     "$lte": QA_util_time_stamp(end)
-                },
+            },
             'type': frequence
         },
         {"_id": 0},
@@ -369,7 +370,7 @@ def QA_fetch_index_transaction(
                                              'code']).set_index(
                                                  'datetime',
                                                  drop=False
-                                             )
+        )
         # return res
     except:
         res = None
@@ -550,13 +551,14 @@ def QA_fetch_stock_full(date, format='numpy', collections=DATABASE.stock_day):
             date
         )
 
+
 def QA_fetch_etf_day(
-    code,
-    start,
-    end,
-    format='numpy',
-    frequence='day',
-    collections=DATABASE.etf_day):
+        code,
+        start,
+        end,
+        format='numpy',
+        frequence='day',
+        collections=DATABASE.etf_day):
     """'获取ETF日线'
 
     Returns:
@@ -585,7 +587,7 @@ def QA_fetch_etf_day(
                     {
                         "$lte": QA_util_date_stamp(end),
                         "$gte": QA_util_date_stamp(start)
-                    }
+                }
             },
             {"_id": 0},
             batch_size=10000
@@ -601,7 +603,7 @@ def QA_fetch_etf_day(
                                 'code'])).query('volume>1').set_index(
                                     'date',
                                     drop=False
-                                )
+            )
             res = res.loc[:,
                           [
                               'code',
@@ -637,13 +639,14 @@ def QA_fetch_etf_day(
                end)
         )
 
+
 def QA_fetch_etf_min(
-    code,
-    start,
-    end,
-    format='numpy',
-    frequence='1min',
-    collections=DATABASE.etf_min):
+        code,
+        start,
+        end,
+        format='numpy',
+        frequence='1min',
+        collections=DATABASE.etf_min):
     '获取ETF分钟线'
     if frequence in ['1min', '1m']:
         frequence = '1min'
@@ -674,7 +677,7 @@ def QA_fetch_etf_min(
                 {
                     "$gte": QA_util_time_stamp(start),
                     "$lte": QA_util_time_stamp(end)
-                },
+            },
             'type': frequence
         },
         {"_id": 0},
@@ -690,7 +693,7 @@ def QA_fetch_etf_min(
                                              'code']).set_index(
                                                  'datetime',
                                                  drop=False
-                                             )
+        )
         # return res
     except:
         res = None
@@ -710,12 +713,13 @@ def QA_fetch_etf_min(
         )
         return None
 
+
 def QA_fetch_etf_adj(
-    code,
-    start,
-    end,
-    format='pd',
-    collections=DATABASE.etf_adj):
+        code,
+        start,
+        end,
+        format='pd',
+        collections=DATABASE.etf_adj):
     """获取ETF复权系数 ADJ
 
     """
@@ -771,7 +775,7 @@ def QA_fetch_index_day(
                     {
                         "$lte": QA_util_date_stamp(end),
                         "$gte": QA_util_date_stamp(start)
-                    }
+                }
             },
             {"_id": 0},
             batch_size=10000
@@ -786,7 +790,7 @@ def QA_fetch_index_day(
                                 'code'])).set_index(
                                     'date',
                                     drop=False
-                                )
+            )
         except:
             res = None
 
@@ -844,7 +848,7 @@ def QA_fetch_index_min(
                 {
                     "$gte": QA_util_time_stamp(start),
                     "$lte": QA_util_time_stamp(end)
-                },
+            },
             'type': frequence
         },
         {"_id": 0},
@@ -860,7 +864,7 @@ def QA_fetch_index_min(
                                              'code']).set_index(
                                                  'datetime',
                                                  drop=False
-                                             )
+        )
         # return res
     except:
         res = None
@@ -870,7 +874,7 @@ def QA_fetch_index_min(
         return res
     elif format in ['json', 'dict']:
         return QA_util_to_json_from_pandas(res)
-        
+
     elif format in ['n', 'N', 'numpy']:
         return numpy.asarray(res)
     elif format in ['list', 'l', 'L']:
@@ -906,7 +910,7 @@ def QA_fetch_future_day(
                     {
                         "$lte": QA_util_date_stamp(end),
                         "$gte": QA_util_date_stamp(start)
-                    }
+                }
             },
             {"_id": 0},
             batch_size=10000
@@ -991,7 +995,7 @@ def QA_fetch_future_min(
                 {
                     "$gte": QA_util_time_stamp(start),
                     "$lte": QA_util_time_stamp(end)
-                },
+            },
             'type': frequence
         },
         batch_size=10000
@@ -1041,11 +1045,11 @@ def QA_fetch_future_min(
         ]
     )
     _data = _data.assign(datetime=pd.to_datetime(_data['datetime'], utc=False)
-                        ).drop_duplicates((['datetime',
-                                            'code'])).set_index(
-                                                'datetime',
-                                                drop=False
-                                            )
+                         ).drop_duplicates((['datetime',
+                                             'code'])).set_index(
+        'datetime',
+        drop=False
+    )
 
     if format in ['numpy', 'np', 'n']:
         return numpy.asarray(_data)
@@ -1102,7 +1106,7 @@ def QA_fetch_ctp_tick(
                 {
                     "$gte": QA_util_time_stamp(start),
                     "$lte": QA_util_time_stamp(end)
-                },
+            },
             'type': frequence
         },
         {"_id": 0},
@@ -1110,9 +1114,9 @@ def QA_fetch_ctp_tick(
     )
 
     hq = pd.DataFrame([data for data in cursor]
-                     ).replace(1.7976931348623157e+308,
-                               numpy.nan).replace('',
-                                                  numpy.nan).dropna(axis=1)
+                      ).replace(1.7976931348623157e+308,
+                                numpy.nan).replace('',
+                                                   numpy.nan).dropna(axis=1)
     p1 = hq.loc[:,
                 [
                     'ActionDay',
@@ -1149,7 +1153,7 @@ def QA_fetch_stock_xdxr(code, format='pd', collections=DATABASE.stock_xdxr):
             collections.find({'code': {
                 '$in': code
             }},
-                             batch_size=10000)
+                batch_size=10000)
         ]
     ).drop(['_id'],
            axis=1)
@@ -1166,7 +1170,7 @@ def QA_fetch_etf_xdxr(code, format='pd', collections=DATABASE.etf_xdxr):
             collections.find({'code': {
                 '$in': code
             }},
-                             batch_size=10000)
+                batch_size=10000)
         ]
     ).drop(['_id'],
            axis=1)
@@ -1239,15 +1243,15 @@ def QA_fetch_stock_block(
                 collections.find({'code': {
                     '$in': code
                 }},
-                                 batch_size=10000)
+                    batch_size=10000)
             ]
         ).drop(['_id'],
                axis=1)
         return data.set_index('code', drop=False)
     else:
         data = pd.DataFrame([item for item in collections.find()]
-                           ).drop(['_id'],
-                                  axis=1)
+                            ).drop(['_id'],
+                                   axis=1)
         return data.set_index('code', drop=False)
 
 
@@ -1260,8 +1264,8 @@ def QA_fetch_stock_info(code, format='pd', collections=DATABASE.stock_info):
                 .find({'code': {
                     '$in': code
                 }},
-                      {"_id": 0},
-                      batch_size=10000)
+                    {"_id": 0},
+                    batch_size=10000)
             ]
         )
         #data['date'] = pd.to_datetime(data['date'], utc=False)
@@ -1281,7 +1285,8 @@ def QA_fetch_stock_name(code, collections=DATABASE.stock_list, ):
             return res['name']
         except Exception as e:
             if (res is None):
-                QA_util_log_info(u'请检查mongodb quantaxis.stock_list collection 是否为空。')
+                QA_util_log_info(
+                    u'请检查mongodb quantaxis.stock_list collection 是否为空。')
             QA_util_log_info(e)
             return code
     elif isinstance(code, list):
@@ -1292,8 +1297,8 @@ def QA_fetch_stock_name(code, collections=DATABASE.stock_list, ):
                 .find({'code': {
                     '$in': code
                 }},
-                      {"_id": 0},
-                      batch_size=10000)
+                    {"_id": 0},
+                    batch_size=10000)
             ]
         )
         #data['date'] = pd.to_datetime(data['date'], utc=False)
@@ -1318,8 +1323,8 @@ def QA_fetch_index_name(code, collections=DATABASE.index_list):
                 .find({'code': {
                     '$in': code
                 }},
-                      {"_id": 0},
-                      batch_size=10000)
+                    {"_id": 0},
+                    batch_size=10000)
             ]
         )
         #data['date'] = pd.to_datetime(data['date'], utc=False)
@@ -1344,8 +1349,8 @@ def QA_fetch_etf_name(code, collections=DATABASE.etf_list):
                 .find({'code': {
                     '$in': code
                 }},
-                      {"_id": 0},
-                      batch_size=10000)
+                    {"_id": 0},
+                    batch_size=10000)
             ]
         )
         #data['date'] = pd.to_datetime(data['date'], utc=False)
@@ -1383,11 +1388,12 @@ def QA_fetch_quotations(date=datetime.date.today(), db=DATABASE):
             ]
         )
         return data.assign(
-            date=pd.to_datetime(data.datetime.apply(lambda x: str(x)[0:10]), utc=False)
+            date=pd.to_datetime(data.datetime.apply(
+                lambda x: str(x)[0:10]), utc=False)
         ).assign(datetime=pd.to_datetime(data.datetime, utc=False)
-                ).set_index(['datetime',
-                             'code'],
-                            drop=False).sort_index()
+                 ).set_index(['datetime',
+                              'code'],
+                             drop=False).sort_index()
     except Exception as e:
         raise e
 
@@ -1657,8 +1663,8 @@ def QA_fetch_financial_report(code, report_date, ltype='EN', db=DATABASE):
                 .find({'code': {
                     '$in': code
                 }},
-                      {"_id": 0},
-                      batch_size=10000)
+                    {"_id": 0},
+                    batch_size=10000)
             ]
         else:
             data = [item for item in collection.find({}, {"_id": 0})]
@@ -1681,17 +1687,17 @@ def QA_fetch_financial_report(code, report_date, ltype='EN', db=DATABASE):
 
             if res_pd.report_date.dtype == numpy.int64:
                 res_pd.report_date = pd.to_datetime(
-                    res_pd.report_date.apply(QA_util_date_int2str)
-                , utc=False)
+                    res_pd.report_date.apply(QA_util_date_int2str), utc=False)
             else:
-                res_pd.report_date = pd.to_datetime(res_pd.report_date, utc=False)
+                res_pd.report_date = pd.to_datetime(
+                    res_pd.report_date, utc=False)
 
             return res_pd.replace(-4.039810335e+34,
                                   numpy.nan).set_index(
                                       ['report_date',
                                        'code'],
                                       drop=False
-                                  )
+            )
         else:
             return None
     except Exception as e:
@@ -1934,7 +1940,7 @@ def QA_fetch_cryptocurrency_day(
                     {
                         "$lte": QA_util_date_stamp(end),
                         "$gte": QA_util_date_stamp(start)
-                    }
+                }
             },
             {"_id": 0},
             batch_size=10000
@@ -1967,7 +1973,7 @@ def QA_fetch_cryptocurrency_day(
                 _data,
                 columns=[
                     # 原抓取时候存入mongdb本来按照交易所叫法为'symbol'，但是考虑兼容DataStruct，读取的时候字段改名叫'code'
-                    'code', # symbol
+                    'code',  # symbol
                     'open',
                     'high',
                     'low',
@@ -2022,7 +2028,7 @@ def QA_fetch_cryptocurrency_min(
                 {
                     "$gte": QA_util_time_stamp(start),
                     "$lte": QA_util_time_stamp(end)
-                },
+            },
             'type': frequence
         },
         batch_size=10000
@@ -2033,13 +2039,20 @@ def QA_fetch_cryptocurrency_min(
         _data.append(
             [
                 str(item['symbol']),
-                float(item['open']) if (item['open'] is not None) else item['open'],
-                float(item['high']) if (item['high'] is not None) else item['high'],
-                float(item['low']) if (item['low'] is not None) else item['low'],
-                float(item['close']) if (item['close'] is not None) else item['close'],
-                float(item['volume']) if (item['volume'] is not None) else item['volume'],
-                float(item['trade']) if (item['trade'] is not None) else item['trade'],
-                float(item['amount']) if (item['amount'] is not None) else item['amount'],
+                float(item['open']) if (item['open']
+                                        is not None) else item['open'],
+                float(item['high']) if (item['high']
+                                        is not None) else item['high'],
+                float(item['low']) if (item['low']
+                                       is not None) else item['low'],
+                float(item['close']) if (item['close']
+                                         is not None) else item['close'],
+                float(item['volume']) if (item['volume']
+                                          is not None) else item['volume'],
+                float(item['trade']) if (item['trade']
+                                         is not None) else item['trade'],
+                float(item['amount']) if (item['amount']
+                                          is not None) else item['amount'],
                 item['time_stamp'],
                 item['date'],
                 item['datetime'],
@@ -2051,7 +2064,7 @@ def QA_fetch_cryptocurrency_min(
         _data,
         columns=[
             # 原抓取时候存入mongdb本来按照交易所叫法为'symbol'，但是考虑兼容DataStruct，读取的时候字段改名叫'code'，并非拼写错误。
-            'code', # symbol
+            'code',  # symbol
             'open',
             'high',
             'low',
@@ -2066,10 +2079,10 @@ def QA_fetch_cryptocurrency_min(
         ]
     )
     _data = _data.assign(datetime=pd.to_datetime(_data['datetime'], utc=False)
-                        ).drop_duplicates((['datetime', 'code'])).set_index(
-                                                'datetime',
-                                                drop=False
-                                            )
+                         ).drop_duplicates((['datetime', 'code'])).set_index(
+        'datetime',
+        drop=False
+    )
 
     if format in ['numpy', 'np', 'n']:
         return numpy.asarray(_data)
@@ -2080,7 +2093,7 @@ def QA_fetch_cryptocurrency_min(
 
 
 if __name__ == '__main__':
-    #print(QA_fetch_lhb('2006-07-03'))
+    # print(QA_fetch_lhb('2006-07-03'))
     print(
         QA_fetch_cryptocurrency_min(
             code=[
@@ -2094,16 +2107,16 @@ if __name__ == '__main__':
         )
     )
     data_h01 = QA_fetch_cryptocurrency_min(
-            code=[
-                'HUOBI.btcusdt',
-                'HUOBI.ethusdt',
-                'HUOBI.eosusdt',
-            ],
-            start='2017-10-01',
-            end='2020-03-24 02:10:00',
-            frequence='60min',
-            format='pd'
-        )
+        code=[
+            'HUOBI.btcusdt',
+            'HUOBI.ethusdt',
+            'HUOBI.eosusdt',
+        ],
+        start='2017-10-01',
+        end='2020-03-24 02:10:00',
+        frequence='60min',
+        format='pd'
+    )
     print(data_h01)
     print(
         QA_fetch_cryptocurrency_day(

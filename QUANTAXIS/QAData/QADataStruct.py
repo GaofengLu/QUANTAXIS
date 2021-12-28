@@ -84,7 +84,7 @@ def _QA_fetch_stock_adj(
 
     start = str(start)[0:10]
     end = str(end)[0:10]
-    #code= [code] if isinstance(code,str) else code
+    # code= [code] if isinstance(code,str) else code
 
     # code checking
     code = QA_util_code_tolist(code)
@@ -104,7 +104,7 @@ def _QA_fetch_stock_adj(
             {"_id": 0},
             batch_size=10000
         )
-        #res=[QA_util_dict_remove_key(data, '_id') for data in cursor]
+        # res=[QA_util_dict_remove_key(data, '_id') for data in cursor]
 
         res = pd.DataFrame([item for item in cursor])
         res.date = pd.to_datetime(res.date, utc=False)
@@ -142,71 +142,111 @@ class QA_DataStruct_Stock_day(_quotation_base):
     __str__ = __repr__
 
     # 前复权
-    def to_qfq(self):
-        if self.if_fq == 'bfq':
-            if len(self.code) < 1:
-                self.if_fq = 'qfq'
-                return self
-            # elif len(self.code) < 20:
-            #     return self.new(pd.concat(list(map(
-            #         lambda x: QA_data_stock_to_fq(self.data[self.data['code'] == x]), self.code))), self.type, 'qfq')
+    def to_qfq(self, with_factor=False):
+        if not with_factor:
+            if self.if_fq == 'bfq':
+                if len(self.code) < 1:
+                    self.if_fq = 'qfq'
+                    return self
+                # elif len(self.code) < 20:
+                #     return self.new(pd.concat(list(map(
+                #         lambda x: QA_data_stock_to_fq(self.data[self.data['code'] == x]), self.code))), self.type, 'qfq')
+                else:
+                    try:
+                        date = self.date
+                        adj = _QA_fetch_stock_adj(
+                            list(self.code),
+                            str(date[0])[0:10],
+                            str(date[-1])[0:10]
+                        ).set_index(['date',
+                                     'code'])
+                        data = self.data.join(adj)
+                        for col in ['open', 'high', 'low', 'close']:
+                            data[col] = data[col] * data['adj']
+                        # data['volume'] = data['volume'] / \
+                        #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
+
+                        data['volume'] = data['volume'] if 'volume' in data.columns else data['vol']
+                        try:
+                            data['high_limit'] = data['high_limit'] * data['adj']
+                            data['low_limit'] = data['high_limit'] * data['adj']
+                        except:
+                            pass
+                        return self.new(data, self.type, 'qfq')
+                    except Exception as e:
+                        print(e)
+                        print('use old model qfq')
+                        return self.new(
+                            self.groupby(level=1).apply(QA_data_stock_to_fq,
+                                                        'qfq'),
+                            self.type,
+                            'qfq'
+                        )
             else:
-                try:
-                    date = self.date
-                    adj = _QA_fetch_stock_adj(
-                        list(self.code),
-                        str(date[0])[0:10],
-                        str(date[-1])[0:10]
-                    ).set_index(['date',
-                                 'code'])
-                    data = self.data.join(adj)
+                QA_util_log_info(
+                    'none support type for qfq Current type is: %s' % self.if_fq
+                )
+                return self
+        else:
+            # 数据里自带复权因子（tushare的数据）
+            if self.if_fq == 'bfq':
+                if len(self.code) < 1:
+                    self.if_fq = 'qfq'
+                    return self
+                else:
+                    data = self.data.copy()
                     for col in ['open', 'high', 'low', 'close']:
-                        data[col] = data[col] * data['adj']
+                        data[col] = data[col] * data['adj_factor'] / \
+                            float(data['adj_factor'][-1])
+                        data[col] = data[col].map(lambda x: '%.4f' % x)
+
                     # data['volume'] = data['volume'] / \
                     #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
-
-                    data['volume'] = data['volume']  if 'volume' in data.columns else data['vol']
-                    try:
-                        data['high_limit'] = data['high_limit'] * data['adj']
-                        data['low_limit'] = data['high_limit'] * data['adj']
-                    except:
-                        pass
                     return self.new(data, self.type, 'qfq')
-                except Exception as e:
-                    print(e)
-                    print('use old model qfq')
+            else:
+                QA_util_log_info(
+                    'none support type for qfq Current type is: %s' % self.if_fq
+                )
+                return self
+    # 后复权
+    def to_hfq(self, with_factor=False):
+        if not with_factor:
+            if self.if_fq == 'bfq':
+                if len(self.code) < 1:
+                    self.if_fq = 'hfq'
+                    return self
+                else:
                     return self.new(
                         self.groupby(level=1).apply(QA_data_stock_to_fq,
-                                                    'qfq'),
+                                                    'hfq'),
                         self.type,
-                        'qfq'
+                        'hfq'
                     )
-        else:
-            QA_util_log_info(
-                'none support type for qfq Current type is: %s' % self.if_fq
-            )
-            return self
-
-    # 后复权
-    def to_hfq(self):
-        if self.if_fq == 'bfq':
-            if len(self.code) < 1:
-                self.if_fq = 'hfq'
-                return self
+                    # return self.new(pd.concat(list(map(lambda x: QA_data_stock_to_fq(
+                    #     self.data[self.data['code'] == x], 'hfq'), self.code))), self.type, 'hfq')
             else:
-                return self.new(
-                    self.groupby(level=1).apply(QA_data_stock_to_fq,
-                                                'hfq'),
-                    self.type,
-                    'hfq'
+                QA_util_log_info(
+                    'none support type for qfq Current type is: %s' % self.if_fq
                 )
-                # return self.new(pd.concat(list(map(lambda x: QA_data_stock_to_fq(
-                #     self.data[self.data['code'] == x], 'hfq'), self.code))), self.type, 'hfq')
+                return self
         else:
-            QA_util_log_info(
-                'none support type for qfq Current type is: %s' % self.if_fq
-            )
-            return self
+            if self.if_fq == 'bfq':
+                if len(self.code) < 1:
+                    self.if_fq = 'hfq'
+                    return self
+                else:
+                    data = self.data.copy()
+                    for col in ['open', 'high', 'low', 'close']:
+                        data[col] = data[col] * data['adj_factor']
+                        data[col] = data[col].map(lambda x: '%.4f' % x)
+                    return self.new(data, self.type, 'hfq')
+                    # return self.new(pd.concat(list(map(lambda x: QA_data_stock_to_fq(
+                    #     self.data[self.data['code'] == x], 'hfq'), self.code))), self.type, 'hfq')
+            else:
+                QA_util_log_info(
+                    'none support type for hfq Current type is: %s' % self.if_fq
+                )
+                return self
 
     @property
     @lru_cache()
@@ -370,7 +410,7 @@ class QA_DataStruct_Stock_min(_quotation_base):
                         data[col] = data[col] * data['adj']
                     # data['volume'] = data['volume'] / \
                     #     data['adj']
-                    #data['volume'] = data['volume']  if 'volume' in data.columns else data['vol']
+                    # data['volume'] = data['volume']  if 'volume' in data.columns else data['vol']
                     try:
                         data['high_limit'] = data['high_limit'] * data['adj']
                         data['low_limit'] = data['high_limit'] * data['adj']
@@ -507,7 +547,7 @@ class QA_DataStruct_ETF_day(_quotation_base):
                     # data['volume'] = data['volume'] / \
                     #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
 
-                    data['volume'] = data['volume']  if 'volume' in data.columns else data['vol']
+                    data['volume'] = data['volume'] if 'volume' in data.columns else data['vol']
                     try:
                         data['high_limit'] = data['high_limit'] * data['adj']
                         data['low_limit'] = data['high_limit'] * data['adj']
@@ -713,7 +753,7 @@ class QA_DataStruct_ETF_min(_quotation_base):
                         data[col] = data[col] * data['adj']
                     # data['volume'] = data['volume'] / \
                     #     data['adj']
-                    #data['volume'] = data['volume']  if 'volume' in data.columns else data['vol']
+                    # data['volume'] = data['volume']  if 'volume' in data.columns else data['vol']
                     try:
                         data['high_limit'] = data['high_limit'] * data['adj']
                         data['low_limit'] = data['high_limit'] * data['adj']
@@ -794,6 +834,7 @@ class QA_DataStruct_ETF_min(_quotation_base):
     @lru_cache()
     def min60(self):
         return self.resample('60min')
+
 
 class QA_DataStruct_Index_min(_quotation_base):
     '自定义的分钟线数据结构'
@@ -1345,7 +1386,7 @@ class QA_DataStruct_Stock_transaction():
         """
 
         return self.data.query('amount>={}'.format(lower)
-                              ).query('amount<={}'.format(higher))
+                               ).query('amount<={}'.format(higher))
 
     def get_small_order(self, smallamount=200000):
         """return small level order
@@ -1596,7 +1637,7 @@ class QA_DataStruct_Index_transaction():
         """
 
         return self.data.query('amount>={}'.format(lower)
-                              ).query('amount<={}'.format(higher))
+                               ).query('amount<={}'.format(higher))
 
     def get_small_order(self, smallamount=200000):
         """return small level order
@@ -1851,7 +1892,7 @@ class QA_DataStruct_Security_list():
                                    'name']].set_index(
                                        'code',
                                        drop=False
-                                   )
+        )
 
     @property
     def code(self):

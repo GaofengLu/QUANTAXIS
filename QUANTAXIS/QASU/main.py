@@ -122,6 +122,7 @@ def QA_SU_save_future_list(engine, client=DATABASE):
     engine = select_save_engine(engine)
     engine.QA_SU_save_future_list(client=client)
 
+
 def QA_SU_save_single_future_day(code, engine, client=DATABASE, paralleled=False):
     """save single_future_day
 
@@ -137,6 +138,7 @@ def QA_SU_save_single_future_day(code, engine, client=DATABASE, paralleled=False
 
     engine = select_save_engine(engine, paralleled=paralleled)
     engine.QA_SU_save_single_future_day(code=code, client=client)
+
 
 def QA_SU_save_future_day(engine, client=DATABASE):
     """save future_day
@@ -165,6 +167,7 @@ def QA_SU_save_future_day_all(engine, client=DATABASE):
     engine = select_save_engine(engine)
     engine.QA_SU_save_future_day_all(client=client)
 
+
 def QA_SU_save_single_future_min(code, engine, client=DATABASE):
     """save single_future_min
 
@@ -177,6 +180,7 @@ def QA_SU_save_single_future_min(code, engine, client=DATABASE):
 
     engine = select_save_engine(engine)
     engine.QA_SU_save_single_future_min(code=code, client=client)
+
 
 def QA_SU_save_future_min(engine, client=DATABASE):
     """save future_min
@@ -242,9 +246,9 @@ def QA_SU_save_single_stock_day(code, engine, client=DATABASE, paralleled=False)
 def QA_SU_save_option_contract_list(engine, client=DATABASE):
     '''
 
-    :param engine: 
-    :param client: 
-    :return: 
+    :param engine:
+    :param client:
+    :return:
     '''
     engine = select_save_engine(engine)
     engine.QA_SU_save_option_contract_list(client=client)
@@ -292,7 +296,6 @@ def QA_SU_save_option_50etf_min(engine, client=DATABASE):
     '''
     engine = select_save_engine(engine)
     engine.QA_SU_save_option_50etf_min(client=client)
-
 
 
 def QA_SU_save_option_300etf_day(engine, client=DATABASE):
@@ -377,7 +380,6 @@ def QA_SU_save_index_transaction(engine, client=DATABASE):
 
     engine = select_save_engine(engine)
     engine.QA_SU_save_index_transaction(client=client)
-
 
 
 def QA_SU_save_single_stock_min(code, engine, client=DATABASE):
@@ -527,6 +529,7 @@ def QA_SU_save_stock_xdxr(engine, client=DATABASE):
     engine = select_save_engine(engine)
     engine.QA_SU_save_stock_xdxr(client=client)
 
+
 def QA_SU_save_etf_xdxr(engine, client=DATABASE):
     """save etf_xdxr
 
@@ -631,8 +634,10 @@ def QA_SU_crawl_eastmoney(action="zjlx", stockCode=None):
 def QA_SU_save_financialfiles():
     return save_financialfiles.QA_SU_save_financial_files()
 
+
 def QA_SU_save_financialfiles_fromtdx():
     return save_financialfiles.QA_SU_save_financial_files(fromtdx=True)
+
 
 def QA_SU_save_report_calendar_day():
     return save_financial_calendar.QA_SU_save_report_calendar_day()
