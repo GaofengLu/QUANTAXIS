@@ -99,7 +99,7 @@ from QUANTAXIS.QAUtil.QACode import QA_util_code_tostr, QA_util_code_tolist
 from QUANTAXIS.QAUtil.QADict import QA_util_dict_remove_key
 # log
 from QUANTAXIS.QAUtil.QALogs import (QA_util_log_debug, QA_util_log_expection,
-                                     QA_util_log_info)
+                                     QA_util_log_info, QA_util_log_error)
 # MongoDB
 from QUANTAXIS.QAUtil.QAMongo import (QA_util_mongo_infos,
                                       QA_util_mongo_initial,

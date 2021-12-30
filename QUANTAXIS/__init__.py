@@ -271,7 +271,7 @@ from QUANTAXIS.QAUtil import (  # QAPARAMETER
     QA_util_get_real_datelist, QA_util_get_trade_datetime,
     QA_util_get_trade_gap, QA_util_get_trade_range, QA_util_id2date,
     QA_util_if_trade, QA_util_if_tradetime, QA_util_is_trade,
-    QA_util_log_debug, QA_util_log_expection, QA_util_log_info,
+    QA_util_log_debug, QA_util_log_expection, QA_util_log_info, QA_util_log_error,
     QA_util_make_hour_index, QA_util_make_min_index, QA_util_mongo_infos,
     QA_util_mongo_initial, QA_util_mongo_status, QA_util_ms_stamp,
     QA_util_multi_demension_list, QA_util_random_with_topic, QA_util_realtime,

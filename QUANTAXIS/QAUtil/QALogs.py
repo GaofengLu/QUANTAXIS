@@ -31,6 +31,7 @@ QA_util_log_debug()
 QA_util_log_expection()
 """
 
+import colorlog
 import configparser
 import datetime
 import os
@@ -46,40 +47,50 @@ from QUANTAXIS.QAUtil.QASetting import QA_Setting
 """
 
 try:
-    _name = '{}{}quantaxis_{}-{}-.log'.format(
+    _name = '{}{}quantaxis_{}-{}.log'.format(
         log_path,
         os.sep,
         os.path.basename(sys.argv[0]).split('.py')[0],
         str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     )
 except:
-    _name = '{}{}quantaxis-{}-.log'.format(
+    _name = '{}{}quantaxis-{}.log'.format(
         log_path,
         os.sep,
         str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     )
 
 logging.basicConfig(
-    level=logging.WARNING,
-    format='%(asctime)s QUANTAXIS>>> %(message)s',
+    level=logging.INFO,
+    format='%(asctime)s %(message)s',
     datefmt='%H:%M:%S',
     filename=_name,
     filemode='w',
 )
+
+
+handler = colorlog.StreamHandler()
+handler.setFormatter(colorlog.ColoredFormatter(
+    '%(log_color)s%(asctime)s %(message)s'))
+handler.setLevel(logging.INFO)
+
+logger = colorlog.getLogger()
+logger.addHandler(handler)
+
+'''
 console = logging.StreamHandler()
 console.setLevel(logging.WARNING)
 formatter = logging.Formatter('QUANTAXIS>> %(message)s')
 console.setFormatter(formatter)
-logging.getLogger('').addHandler(console)
-
+logging.getLogger().addHandler(console)
+'''
 #logging.info('start QUANTAXIS')
 
 
 def QA_util_log_debug(logs, ui_log=None, ui_progress=None):
-    
     """
     explanation:
-        QUANTAXIS DEBUG级别日志接口	
+        QUANTAXIS DEBUG级别日志接口
 
     params:
         * logs ->:
@@ -97,10 +108,10 @@ def QA_util_log_debug(logs, ui_log=None, ui_progress=None):
 
     return:
         None
-	
+
     demonstrate:
         Not described
-	
+
     output:
         Not described
     """
@@ -108,10 +119,9 @@ def QA_util_log_debug(logs, ui_log=None, ui_progress=None):
 
 
 def QA_util_log_info(logs, ui_log=None, ui_progress=None, ui_progress_int_value=None):
-
     """
     explanation:
-        QUANTAXIS INFO级别日志接口	
+        QUANTAXIS INFO级别日志接口
 
     params:
         * logs ->:
@@ -119,11 +129,11 @@ def QA_util_log_info(logs, ui_log=None, ui_progress=None, ui_progress_int_value=
             type: null
             optional: [null]
         * ui_log ->:
-            meaning: 
+            meaning:
             type: null
             optional: [null]
         * ui_progress ->:
-            meaning: 
+            meaning:
             type: null
             optional: [null]
         * ui_progress_int_value ->:
@@ -133,10 +143,10 @@ def QA_util_log_info(logs, ui_log=None, ui_progress=None, ui_progress_int_value=
 
     return:
         None
-	
+
     demonstrate:
         Not described
-	
+
     output:
         Not described
     """
@@ -147,7 +157,7 @@ def QA_util_log_info(logs, ui_log=None, ui_progress=None, ui_progress_int_value=
 
     QA_util_log_x is under [QAStandard#0.0.2@602-x] Protocol
     """
-    logging.warning(logs)
+    logging.info(logs)
 
     # 给GUI使用，更新当前任务到日志和进度
     if ui_log is not None:
@@ -161,11 +171,10 @@ def QA_util_log_info(logs, ui_log=None, ui_progress=None, ui_progress_int_value=
         ui_progress.emit(ui_progress_int_value)
 
 
-def QA_util_log_expection(logs, ui_log=None, ui_progress=None):
-    
+def QA_util_log_error(logs, ui_log=None, ui_progress=None):
     """
     explanation:
-        QUANTAXIS ERROR级别日志接口		
+        QUANTAXIS ERROR级别日志接口
 
     params:
         * logs ->:
@@ -183,12 +192,48 @@ def QA_util_log_expection(logs, ui_log=None, ui_progress=None):
 
     return:
         None
-	
+
     demonstrate:
         Not described
-	
+
+    output:
+        Not described
+    """
+
+    logging.error(logs)
+
+
+def QA_util_log_expection(logs, ui_log=None, ui_progress=None):
+    """
+    explanation:
+        QUANTAXIS ERROR级别日志接口
+
+    params:
+        * logs ->:
+            meaning: 日志信息
+            type: null
+            optional: [null]
+        * ui_log ->:
+            meaning:
+            type: null
+            optional: [null]
+        * ui_progress ->:
+            meaning:
+            type: null
+            optional: [null]
+
+    return:
+        None
+
+    demonstrate:
+        Not described
+
     output:
         Not described
     """
 
     logging.exception(logs)
+
+
+if __name__ == '__main__':
+    QA_util_log_error('hhhhh')
