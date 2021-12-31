@@ -31,14 +31,13 @@ QA_util_log_debug()
 QA_util_log_expection()
 """
 
-import colorlog
+import coloredlogs
+import logging
 import configparser
 import datetime
 import os
 import sys
-from zenlog import logging
 from QUANTAXIS.QASetting.QALocalize import log_path, setting_path
-
 from QUANTAXIS.QAUtil.QASetting import QA_Setting
 
 
@@ -59,23 +58,21 @@ except:
         os.sep,
         str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     )
+fmt = '%(asctime)s,%(msecs)03d - %(filename)s[:%(lineno)d] - %(message)s'
+field_styles = {'asctime': {'bold': True, 'color': 'black'}, 'hostname': {'color': 'magenta'}, 'levelname': {
+    'bold': True, 'color': 'black'}, 'name': {'color': 'blue'}, 'programname': {'color': 'cyan'}, 'username': {'color': 'yellow'}}
+level_styles = {'critical': {'bold': True, 'color': 'red'}, 'debug': {'color': 'cyan'}, 'error': {'color': 'red'}, 'info': {'color': 'green'}, 'notice': {'color': 'magenta'}, 'spam': {
+    'color': 'green', 'faint': True}, 'success': {'bold': True, 'color': 'green'}, 'verbose': {'color': 'blue'}, 'warning': {'color': 'yellow'}}
+qlogger = logging.getLogger('karma')
+coloredlogs.install(level='DEBUG', logger=qlogger,
+                    fmt=fmt, field_styles=field_styles, level_styles=level_styles)
+f_handler = logging.FileHandler(_name)
+f_handler.setLevel(logging.DEBUG)
+f_handler.setFormatter(logging.Formatter(
+    "%(asctime)s - %(levelname)s - %(filename)s[:%(lineno)d] - %(message)s"))
 
-logging.basicConfig(
-    level=logging.INFO,
-    format='%(asctime)s %(message)s',
-    datefmt='%H:%M:%S',
-    filename=_name,
-    filemode='w',
-)
+qlogger.addHandler(f_handler)
 
-
-handler = colorlog.StreamHandler()
-handler.setFormatter(colorlog.ColoredFormatter(
-    '%(log_color)s%(asctime)s %(message)s'))
-handler.setLevel(logging.INFO)
-
-logger = colorlog.getLogger()
-logger.addHandler(handler)
 
 '''
 console = logging.StreamHandler()
@@ -115,7 +112,7 @@ def QA_util_log_debug(logs, ui_log=None, ui_progress=None):
     output:
         Not described
     """
-    logging.debug(logs)
+    qlogger.debug(logs)
 
 
 def QA_util_log_info(logs, ui_log=None, ui_progress=None, ui_progress_int_value=None):
@@ -157,7 +154,7 @@ def QA_util_log_info(logs, ui_log=None, ui_progress=None, ui_progress_int_value=
 
     QA_util_log_x is under [QAStandard#0.0.2@602-x] Protocol
     """
-    logging.info(logs)
+    qlogger.info(logs)
 
     # 给GUI使用，更新当前任务到日志和进度
     if ui_log is not None:
@@ -200,7 +197,7 @@ def QA_util_log_error(logs, ui_log=None, ui_progress=None):
         Not described
     """
 
-    logging.error(logs)
+    qlogger.error(logs)
 
 
 def QA_util_log_expection(logs, ui_log=None, ui_progress=None):
@@ -232,8 +229,9 @@ def QA_util_log_expection(logs, ui_log=None, ui_progress=None):
         Not described
     """
 
-    logging.exception(logs)
+    qlogger.exception(logs)
 
 
 if __name__ == '__main__':
     QA_util_log_error('hhhhh')
+    QA_util_log_info('hhhh')

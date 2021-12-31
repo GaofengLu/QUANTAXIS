@@ -199,6 +199,7 @@ class QA_DataStruct_Stock_day(_quotation_base):
                         data[col] = data[col] * data['adj_factor'] / \
                             float(data['adj_factor'][-1])
                         data[col] = data[col].map(lambda x: '%.4f' % x)
+                        data[col] = data[col].astype(float)
 
                     # data['volume'] = data['volume'] / \
                     #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
@@ -209,6 +210,7 @@ class QA_DataStruct_Stock_day(_quotation_base):
                 )
                 return self
     # 后复权
+
     def to_hfq(self, with_factor=False):
         if not with_factor:
             if self.if_fq == 'bfq':
@@ -239,6 +241,7 @@ class QA_DataStruct_Stock_day(_quotation_base):
                     for col in ['open', 'high', 'low', 'close']:
                         data[col] = data[col] * data['adj_factor']
                         data[col] = data[col].map(lambda x: '%.4f' % x)
+                        data[col] = data[col].astype(float)
                     return self.new(data, self.type, 'hfq')
                     # return self.new(pd.concat(list(map(lambda x: QA_data_stock_to_fq(
                     #     self.data[self.data['code'] == x], 'hfq'), self.code))), self.type, 'hfq')

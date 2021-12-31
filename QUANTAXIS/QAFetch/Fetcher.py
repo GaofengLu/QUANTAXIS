@@ -50,6 +50,7 @@ from QUANTAXIS.QAFetch import QAWind as QAWind
 from QUANTAXIS.QAUtil.QAParameter import (DATABASE_TABLE, DATASOURCE,
                                           FREQUENCE, MARKET_TYPE,
                                           OUTPUT_FORMAT)
+from QUANTAXIS.QAUtil import DATABASE
 from QUANTAXIS.QAUtil.QASql import QA_util_sql_mongo_setting
 from QUANTAXIS.QAUtil.QADate_trade import QA_util_get_next_period
 from QUANTAXIS.QAData.data_resample import QA_data_day_resample
@@ -73,7 +74,7 @@ class QA_Fetcher():
         return self
 
     def get_quotation(self, code=None, start=None, end=None, frequence=None, market=None, source=None, output=None):
-        """        
+        """
         Arguments:
             code {str/list} -- 证券/股票的代码
             start {str} -- 开始日期
@@ -134,7 +135,7 @@ def QA_quotation_adv(code, start, end=save_tdx.now_time(), frequence='1min',
         frequence {enum} -- 频率 QA.FREQUENCE
         market {enum} -- 市场 QA.MARKET_TYPE
         source {enum} -- 来源 QA.DATASOURCE
-        output {enum} -- 输出类型 QA.OUTPUT_FORMAT 
+        output {enum} -- 输出类型 QA.OUTPUT_FORMAT
     """
     if pd.Timestamp(end) > pd.Timestamp(save_tdx.now_time()):
         end = save_tdx.now_time()
@@ -157,7 +158,8 @@ def QA_quotation_adv(code, start, end=save_tdx.now_time(), frequence='1min',
                         # data_tdx与从数据库获取的数据格式上做一些统一。
                         data_tdx = data_tdx.rename(columns={"vol": "volume"}).drop([
                             'date', 'date_stamp'], axis=1)
-                        data_tdx.index = pd.to_datetime(data_tdx.index, utc=False)
+                        data_tdx.index = pd.to_datetime(
+                            data_tdx.index, utc=False)
                         res = pd.concat([res, data_tdx], sort=True)
                     res = QA_DataStruct_Stock_day(
                         res.reset_index().set_index(['date', 'code']))
@@ -193,7 +195,8 @@ def QA_quotation_adv(code, start, end=save_tdx.now_time(), frequence='1min',
                         # data_tdx与从数据库获取的数据格式上做一些统一。
                         data_tdx = data_tdx.rename(columns={"vol": "volume"}).drop(
                             ['date', 'datetime', 'date_stamp', 'time_stamp'], axis=1)
-                        data_tdx.index = pd.to_datetime(data_tdx.index, utc=False)
+                        data_tdx.index = pd.to_datetime(
+                            data_tdx.index, utc=False)
                         res = pd.concat([res, data_tdx], sort=True)
                     res = QA_DataStruct_Stock_day(
                         res.reset_index().set_index(['datetime', 'code']))
@@ -331,7 +334,8 @@ def QA_quotation(code, start, end, frequence, market, source=DATASOURCE.TDX, out
         if frequence == FREQUENCE.DAY:
             if source == DATASOURCE.MONGO:
                 try:
-                    res = QAQueryAdv.QA_fetch_stock_day_adv(code, start, end)
+                    res = QAQueryAdv.QA_fetch_stock_day_adv(
+                        code, start, end, collections=DATABASE.stock_day_ts)
                 except:
                     res = None
             if source == DATASOURCE.TDX or res == None:
