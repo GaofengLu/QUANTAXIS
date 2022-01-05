@@ -239,7 +239,7 @@ def QA_fetch_get_daily_basic(
         code: Union[str, List, Tuple] = None,
         trade_date: Union[str, pd.Timestamp, datetime.datetime] = None,
         fields: Union[str, List, Tuple] = None,
-        wait_seconds: int = 61,
+        wait_seconds: int = 1,
         max_trial: int = 3
 ) -> pd.DataFrame:
     """
@@ -279,7 +279,7 @@ def QA_fetch_get_daily_basic(
                 raise ValueError("[ERROR]")
             return df
         except:
-            time.sleep(61)
+            time.sleep(1)
             _fetch_get_daily_basic(
                 trade_date, fields, trial_count+1
             )
@@ -514,13 +514,15 @@ def QA_fetch_last_financial(
                 # 尝试直接利用单季数据进行拼接
                 cursor_x = x.loc[x.report_date.map(str).str.slice(
                     0, 4) == x.iloc[0].report_date[:4]]
-                cursor_x = cursor_x.drop_duplicates(subset = ['report_date'], keep='first')
+                cursor_x = cursor_x.drop_duplicates(
+                    subset=['report_date'], keep='first')
                 cursor_x = cursor_x.loc[cursor_x.report_date <=
                                         x.iloc[0].report_date]
                 cursor_x = cursor_x.fillna(0)
                 non_numeric_columns = sorted(["f_ann_date", "f_ann_date_stamp", "ann_date", "ann_date_stamp", "report_date", "report_date_stamp",
-                    "update_flag", "report_type", "code", "report_label"])
-                columns = sorted(list(set(cursor_x.columns) - set(non_numeric_columns)))
+                                              "update_flag", "report_type", "code", "report_label"])
+                columns = sorted(
+                    list(set(cursor_x.columns) - set(non_numeric_columns)))
                 rtn_se = cursor_x[columns].sum(axis=0)
                 rtn_se = rtn_se.append(cursor_x[non_numeric_columns].iloc[0])
                 return rtn_se
@@ -714,7 +716,7 @@ def QA_fetch_stock_name(
 
     Args:
         code (Union[str, List, Tuple], optional): 股票代码或列表，默认为 None，查询所有股票.
-        cursor (Union[str, datetime.datetime, pd.Timestamp], optional): 截止时间，股票名称距离 cursor_date 最近的名字 
+        cursor (Union[str, datetime.datetime, pd.Timestamp], optional): 截止时间，股票名称距离 cursor_date 最近的名字
 
     Returns:
         pd.DataFrame: 股票历史曾用名
@@ -858,7 +860,7 @@ def QA_fetch_daily_basic(
     start: Union[str, pd.Timestamp, datetime.datetime] = None,
     end: Union[str, pd.Timestamp, datetime.datetime] = None,
     cursor_date: Union[str, pd.Timestamp, datetime.datetime] = None,
-    fields: Union[str, Tuple, List]= None
+    fields: Union[str, Tuple, List] = None
 ) -> pd.DataFrame:
     """获取全部股票每日重要的基本面指标，可用于选股分析、报表展示等
 
@@ -961,7 +963,8 @@ if __name__ == "__main__":
     # ))
     code = QA_fetch_stock_list().index.tolist()
     cursor_date = '2020-10-08'
-    df_origin = QA_fetch_last_financial(code = code, cursor_date = cursor_date, sheet_type = "balancesheet")
+    df_origin = QA_fetch_last_financial(
+        code=code, cursor_date=cursor_date, sheet_type="balancesheet")
     # print(QA_fetch_last_financial(
     #     cursor_date="2018-08-31"))
     # print(QA_fetch_last_financial(

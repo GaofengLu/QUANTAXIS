@@ -294,7 +294,8 @@ class CLI(cmd.Cmd):
             命令格式: save transaction: save stock_transaction and index_transaction (Warning: Large Disk Space Required) \n\
             命令格式: save ts_all: save ts_industry and ts_namechange and ts_stock_basic ts_daily_basic and ts_financial_reports \n\
             命令格式: save ts_financial: save ts_financial_reports \n\
-            命令格式: save ts_daily: save ts_daily \n\
+            命令格式: save ts_stock_basic: save ts_stock_basic 获取tushare个股基本信息（pro.stock_basic)\n\
+            命令格式: save ts_daily: save ts_daily 获取tushare每日指标（pe，换手率等 pro.daily_basic) \n\
             命令格式: save ts_stock_day: save ts_stock_day 获取tushare日线数据\n\
             ------------------------------------------------------------ \n\
             命令格式：save stock_xdxr : 保存日除权除息数据 \n\
@@ -518,6 +519,28 @@ class CLI(cmd.Cmd):
                         {"username": "admin", "password": "admin"}
                     )
                 QA_ts_update_inc()
+            elif len(arg) == 1 and arg[0] == "ts_stock_basic":
+                if (
+                    QA_Setting()
+                    .client.quantaxis.user_list.find({"username": "admin"})
+                    .count()
+                    == 0
+                ):
+                    QA_Setting().client.quantaxis.user_list.insert(
+                        {"username": "admin", "password": "admin"}
+                    )
+                QA_ts_update_stock_basic()
+            elif len(arg) == 1 and arg[0] == "ts_industry":
+                if (
+                    QA_Setting()
+                    .client.quantaxis.user_list.find({"username": "admin"})
+                    .count()
+                    == 0
+                ):
+                    QA_Setting().client.quantaxis.user_list.insert(
+                        {"username": "admin", "password": "admin"}
+                    )
+                QA_ts_update_industry()
             elif len(arg) == 1 and arg[0] == "ts_daily":
                 if (
                     QA_Setting()

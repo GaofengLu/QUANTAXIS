@@ -426,7 +426,7 @@ def QA_ts_update_namechange():
 
 def QA_ts_update_industry(
     level: Union[str, List, Tuple] = ["L1", "L2", "L3"],
-    src: Union[str, List, Tuple] = "SW",
+    src: Union[str, List, Tuple] = "SW2021",
 ):
     """
     保存个股行业信息
@@ -445,7 +445,7 @@ def QA_ts_update_industry(
                 df_industry = df_industry.append(df_tmp)
             except Exception as e1:
                 print(e1)
-                time.sleep(61)
+                time.sleep(1)
                 try:
                     df_tmp = pro.index_classify(level=lv, src=s)
                     df_tmp["src"] = "sw"
@@ -464,7 +464,7 @@ def QA_ts_update_industry(
             df_results = df_results.append(df_tmp)
         except Exception as e1:
             print(e1)
-            time.sleep(61)
+            time.sleep(1)
             try:
                 df_tmp = pro.index_member(index_code=item["index_code"])
                 df_tmp["industry_name"] = item["industry_name"]

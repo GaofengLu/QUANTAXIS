@@ -47,18 +47,18 @@ def set_token(token=None):
         if token is None:
             print('请设置tushare的token')
         else:
-            print('请升级tushare 至最新版本 pip install tushare -U')
+            print('AAA 请升级tushare 至最新版本 pip install tushare -U')
 
 
 def get_pro():
     try:
-        set_token()
+        # set_token() 不需要设置 token ，只需要在 home 目录下生成 tk.csv 文件即可，免得每次都 set_token 每次都写一遍 tk.csv 文件
         pro = ts.pro_api()
     except Exception as e:
         if isinstance(e, NameError):
             print('请设置tushare pro的token凭证码')
         else:
-            print('请升级tushare 至最新版本 pip install tushare -U')
+            print('BBB 请升级tushare 至最新版本 pip install tushare -U')
             print(e)
         pro = None
     return pro

@@ -58,7 +58,9 @@ except:
         os.sep,
         str(datetime.datetime.now().strftime('%Y-%m-%d-%H-%M-%S'))
     )
-fmt = '%(asctime)s,%(msecs)03d - %(filename)s[:%(lineno)d] - %(message)s'
+# fmt = '%(asctime)s,%(msecs)03d - %(filename)s[:%(lineno)d] - %(message)s'
+fmt = '%(asctime)s,%(msecs)03d - %(message)s'
+
 field_styles = {'asctime': {'bold': True, 'color': 'black'}, 'hostname': {'color': 'magenta'}, 'levelname': {
     'bold': True, 'color': 'black'}, 'name': {'color': 'blue'}, 'programname': {'color': 'cyan'}, 'username': {'color': 'yellow'}}
 level_styles = {'critical': {'bold': True, 'color': 'red'}, 'debug': {'color': 'cyan'}, 'error': {'color': 'red'}, 'info': {'color': 'green'}, 'notice': {'color': 'magenta'}, 'spam': {
@@ -69,7 +71,7 @@ coloredlogs.install(level='DEBUG', logger=qlogger,
 f_handler = logging.FileHandler(_name)
 f_handler.setLevel(logging.DEBUG)
 f_handler.setFormatter(logging.Formatter(
-    "%(asctime)s - %(levelname)s - %(filename)s[:%(lineno)d] - %(message)s"))
+    "%(asctime)s - %(levelname)s - %(message)s"))
 
 qlogger.addHandler(f_handler)
 
@@ -233,5 +235,5 @@ def QA_util_log_expection(logs, ui_log=None, ui_progress=None):
 
 
 if __name__ == '__main__':
-    QA_util_log_error('hhhhh')
+    # QA_util_log_error('hhhhh')
     QA_util_log_info('hhhh')
