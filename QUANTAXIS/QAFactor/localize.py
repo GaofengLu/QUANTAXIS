@@ -399,7 +399,7 @@ def QA_ts_update_namechange():
         try:
             df = df.append(pro.namechange(ts_code=symbol))
         except:
-            time.sleep(61)
+            time.sleep(1)
             try:
                 df = df.append(pro.namechange(ts_code=symbol))
             except:
@@ -515,6 +515,10 @@ def QA_ts_update_daily_basic():
         [("code", ASCENDING), ("trade_date_stamp", ASCENDING)],
         unique=True,
     )
+    coll.create_index(
+        [("trade_date_stamp", ASCENDING)],
+    )
+
     ref = coll.find({})
     cnt = coll.count()
     start_date = "1990-01-01"

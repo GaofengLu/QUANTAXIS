@@ -379,7 +379,7 @@ class QA_SU_save_stock_day_parallelism(QA_SU_save_day_parallelism_thread):
                 self.ui_log
             )
 
-            time.sleep(0.1)
+            time.sleep(0.2)
 
             # 首选查找数据库 是否 有 这个代码的数据
             search_cond = {'code': str(code)[0:6]}
@@ -509,7 +509,7 @@ class QA_SU_save_stock_day_parallelism(QA_SU_save_day_parallelism_thread):
             QA_util_log_info(self.err, ui_log=self.ui_log)
 
 
-max_processes = 10  # 第一次获取可以用全部的32线程，后续增量更新就用10个线程好了
+max_processes = 8  # 第一次获取可以用全部的32线程，后续增量更新就用8个线程好了
 
 
 def QA_SU_save_stock_day(client=DATABASE, ui_log=None, ui_progress=None):

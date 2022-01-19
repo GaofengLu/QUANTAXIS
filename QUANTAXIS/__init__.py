@@ -259,7 +259,7 @@ from QUANTAXIS.QAUtil import (  # QAPARAMETER
     MARKET_TYPE, ORDER_DIRECTION, ORDER_EVENT, ORDER_MODEL, ORDER_STATUS,
     OUTPUT_FORMAT, RUNNING_ENVIRONMENT, RUNNING_STATUS, TRADE_STATUS,
     QA_Setting, QA_util_calc_time, QA_util_cfg_initial, QA_util_code_tolist,
-    QA_util_code_tostr, QA_util_date_gap, QA_util_date_int2str,
+    QA_util_code_tostr, QA_util_date_gap, QA_util_date_int2str, QA_util_fmt_code, QA_util_fmt_code_list,
     QA_util_code_adjust_ctp, QA_util_stamp2datetime,
     QA_util_date_stamp, QA_util_date_str2int, QA_util_date_today,
     QA_util_date_valid, QA_util_dict_remove_key, QA_util_diff_list,

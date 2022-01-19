@@ -33,8 +33,12 @@ from QUANTAXIS.QAUtil.QABar import (QA_util_make_hour_index,
 from QUANTAXIS.QAUtil.QACache import QA_util_cache
 # config
 from QUANTAXIS.QAUtil.QACfg import QA_util_cfg_initial, QA_util_get_cfg
+
 # code function
-from QUANTAXIS.QAUtil.QACode import QA_util_code_tolist, QA_util_code_tostr, QA_util_code_adjust_ctp
+from QUANTAXIS.QAUtil.QACode import (QA_util_code_tostr, QA_util_code_tolist,
+                                     QA_util_code_adjust_ctp,
+                                     QA_util_fmt_code_list, QA_util_fmt_code)
+
 # csv
 from QUANTAXIS.QAUtil.QACsv import QA_util_save_csv
 # date
@@ -93,8 +97,6 @@ from QUANTAXIS.QAUtil.QAFile import QA_util_file_md5
 from QUANTAXIS.QAUtil.QAList import (QA_util_diff_list,
                                      QA_util_multi_demension_list)
 
-# code function
-from QUANTAXIS.QAUtil.QACode import QA_util_code_tostr, QA_util_code_tolist
 # dict function
 from QUANTAXIS.QAUtil.QADict import QA_util_dict_remove_key
 # log

@@ -506,7 +506,7 @@ def QA_fetch_stock_full(date, format='numpy', collections=DATABASE.stock_day):
 
         _data = []
         for item in collections.find({"date_stamp": QA_util_date_stamp(Date)},
-                                     batch_size=10000):
+                                     batch_size=100000):
             _data.append(
                 [
                     str(item['code']),
@@ -732,7 +732,6 @@ def QA_fetch_etf_adj(
     code = QA_util_code_tolist(code)
 
     if QA_util_date_valid(end):
-
         cursor = collections.find(
             {
                 'code': {
@@ -765,7 +764,6 @@ def QA_fetch_index_day(
     end = str(end)[0:10]
     code = QA_util_code_tolist(code)
     if QA_util_date_valid(end) == True:
-
         cursor = collections.find(
             {
                 'code': {
@@ -773,7 +771,11 @@ def QA_fetch_index_day(
                 },
                 "date_stamp":
                     {
-                        "$lte": QA_util_date_stamp(end),
+                        # lugf 指数的数据的时间戳是日期的8点的数据，
+                        # 而 stock_day 的数据又是日期的0点的数据
+                        # 这里都加上8小时好了，否则是获取不到end 当天的数据的
+                        #
+                        "$lte": QA_util_date_stamp(end) + 8*3600,
                         "$gte": QA_util_date_stamp(start)
                 }
             },

@@ -24,6 +24,51 @@
 """
 该文件主要是负责一些对于code名称的处理
 """
+import re
+from functools import partial
+from typing import List, Tuple, Union
+
+
+def QA_util_fmt_code(code: str, style: str = None):
+    """
+    对股票代码格式化处理
+
+    ---
+    :param code: 股票代码
+    :param style: 代码风格
+    """
+    pattern = re.compile(r"\d+")
+    code = pattern.findall(code)[0]
+    if style in ["jq", "joinquant", "聚宽"]:
+        return code + ".XSHG" if code[0] == "6" else code + ".XSHE"
+    if style in ["wd", "windcode", "万得"]:
+        return code + ".SH" if code[0] == "6" else code + ".SZ"
+    if style in ["gm", "goldminer", "掘金"]:
+        return "SHSE." + code if code[0] == "6" else "SZSE." + code
+    if style in ["ss", "skysoft", "天软"]:
+        return "SH" + code if code[0] == "6" else "SZ" + code
+    if style in ["ts", "tushare", "挖地兔"]:
+        return code + ".SH" if code[0] == "6" else code + ".SZ"
+    else:
+        return code
+
+
+def QA_util_fmt_code_list(code_list: Union[str, Tuple[str], List[str]], style: str = None):
+    """
+    为了适应不同行情源股票代码，加入对股票代码格式化的操作, 目前支持 “聚宽” “掘金” “万得” “天软”
+    股票代码格式格式化
+
+    参数
+    ---
+    :param code_list: 股票代码或列表
+    :param style: 行情源
+    """
+
+    if isinstance(code_list, str):
+        return [QA_util_fmt_code(code_list, style)]
+    else:
+        fmt_code = partial(QA_util_fmt_code, style=style)
+        return list(map(fmt_code, code_list))
 
 
 def QA_util_code_tostr(code):
@@ -90,7 +135,6 @@ def QA_util_code_tolist(code, auto_fill=True):
             return [item for item in code]
 
 
-
 def QA_util_code_adjust_ctp(code, source):
     """
     explanation:
@@ -113,14 +157,14 @@ def QA_util_code_adjust_ctp(code, source):
         d =  QA_util_code_adjust_ctp('rb2001', source = 'ctp')
         print(a+"\n"+b+"\n"+c+"\n"+d)
 
-    output:    
+    output:
         >>AP2001
         >>AP001
         >>rb2001
         >>RB2001
     """
     if source == 'ctp':
-        if len(re.search(r'[0-9]+', code)[0]) <4:
+        if len(re.search(r'[0-9]+', code)[0]) < 4:
             return re.search(r'[a-zA-z]+', code)[0] + '2' + re.search(r'[0-9]+', code)[0]
         else:
             return code.upper()

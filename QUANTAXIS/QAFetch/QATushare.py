@@ -83,27 +83,25 @@ def QA_fetch_get_stock_adj(code, end=''):
 
 
 def QA_fetch_stock_basic():
-
-    def fetch_stock_basic():
-        stock_basic = None
-        try:
-            pro = get_pro()
-            stock_basic = pro.stock_basic(
-                exchange='',
-                list_status='L',
-                fields='ts_code,'
-                'symbol,'
-                'name,'
-                'area,industry,list_date'
-            )
-        except Exception as e:
-            print(e)
-            print('except when fetch stock basic')
-            time.sleep(1)
-            stock_basic = fetch_stock_basic()
-        return stock_basic
-
-    return fetch_stock_basic()
+    # 这个函数只获取现在也就是今天还在上市的股票
+    pro = get_pro()
+    df_1 = pro.stock_basic(exchange="", list_status="L", fields='ts_code,'
+                           'symbol,'
+                           'name,'
+                           'area,industry,list_date')
+    df_2 = pro.stock_basic(exchange="", list_status="P", fields='ts_code,'
+                           'symbol,'
+                           'name,'
+                           'area,industry,list_date')
+    df_3 = pro.stock_basic(exchange="", list_status="D", fields='ts_code,'
+                           'symbol,'
+                           'name,'
+                           'area,industry,list_date')
+    df_1["status"] = "L"
+    df_2["status"] = "P"
+    df_3["status"] = "D"
+    df = df_1.append(df_2).append(df_3)
+    return df
 
 
 def cover_time(date):

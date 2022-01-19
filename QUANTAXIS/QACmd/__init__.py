@@ -296,6 +296,7 @@ class CLI(cmd.Cmd):
             命令格式: save ts_financial: save ts_financial_reports \n\
             命令格式: save ts_stock_basic: save ts_stock_basic 获取tushare个股基本信息（pro.stock_basic)\n\
             命令格式: save ts_daily: save ts_daily 获取tushare每日指标（pe，换手率等 pro.daily_basic) \n\
+            命令格式: save ts_daily: save ts_namechange 获取tushare股票曾用名 \n\
             命令格式: save ts_stock_day: save ts_stock_day 获取tushare日线数据\n\
             ------------------------------------------------------------ \n\
             命令格式：save stock_xdxr : 保存日除权除息数据 \n\
@@ -552,6 +553,17 @@ class CLI(cmd.Cmd):
                         {"username": "admin", "password": "admin"}
                     )
                 QA_ts_update_daily_basic()
+            elif len(arg) == 1 and arg[0] == "ts_namechange":
+                if (
+                    QA_Setting()
+                    .client.quantaxis.user_list.find({"username": "admin"})
+                    .count()
+                    == 0
+                ):
+                    QA_Setting().client.quantaxis.user_list.insert(
+                        {"username": "admin", "password": "admin"}
+                    )
+                QA_ts_update_namechange()
             elif len(arg) == 1 and arg[0] == 'ts_stock_day':
                 QA_SU_save_stock_day('ts')
 

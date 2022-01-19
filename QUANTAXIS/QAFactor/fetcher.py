@@ -83,10 +83,10 @@ def QA_fetch_get_individual_financial(
         try:
             if not fields:
                 df = eval(
-                    f"pro.{sheet_type}(ts_code='{code}', period='{report_date}', report_type={report_type})")
+                    f"pro.{sheet_type}_vip(ts_code='{code}', period='{report_date}', report_type={report_type})")
             else:
                 df = eval(
-                    f"pro.{sheet_type}(ts_code='{code}', period='{report_date}', report_type={report_type}, fields={fields})")
+                    f"pro.{sheet_type}_vip(ts_code='{code}', period='{report_date}', report_type={report_type}, fields={fields})")
             return df.rename(columns={"ts_code": "code", "end_date": "report_date"})
         except Exception as e:
             print(e)

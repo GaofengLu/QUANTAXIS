@@ -203,6 +203,14 @@ class QA_DataStruct_Stock_day(_quotation_base):
 
                     # data['volume'] = data['volume'] / \
                     #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
+
+                    try:
+                        data['high_limit'] = data['high_limit'] * data['adj_factor'] / \
+                            float(data['adj_factor'][-1])
+                        data['low_limit'] = data['high_limit'] * data['adj_factor'] / \
+                            float(data['adj_factor'][-1])
+                    except:
+                        pass
                     return self.new(data, self.type, 'qfq')
             else:
                 QA_util_log_info(
@@ -242,6 +250,15 @@ class QA_DataStruct_Stock_day(_quotation_base):
                         data[col] = data[col] * data['adj_factor']
                         data[col] = data[col].map(lambda x: '%.4f' % x)
                         data[col] = data[col].astype(float)
+
+                    try:
+                        data['high_limit'] = data['high_limit'] * \
+                            data['adj_factor']
+                        data['low_limit'] = data['high_limit'] * \
+                            data['adj_factor']
+                    except:
+                        pass
+
                     return self.new(data, self.type, 'hfq')
                     # return self.new(pd.concat(list(map(lambda x: QA_data_stock_to_fq(
                     #     self.data[self.data['code'] == x], 'hfq'), self.code))), self.type, 'hfq')
