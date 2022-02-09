@@ -47,7 +47,7 @@ except:
     from pyecharts.charts import Kline
 
 from QUANTAXIS.QAData.base_datastruct import _quotation_base
-from QUANTAXIS.QAData.data_fq import QA_data_stock_to_fq, QA_data_etf_to_fq
+from QUANTAXIS.QAData.data_fq import QA_data_stock_to_fq, QA_data_stock_to_qfq_ts, QA_data_etf_to_fq
 from QUANTAXIS.QAData.data_resample import (
     QA_data_tick_resample,
     QA_data_day_resample,
@@ -194,24 +194,11 @@ class QA_DataStruct_Stock_day(_quotation_base):
                     self.if_fq = 'qfq'
                     return self
                 else:
-                    data = self.data.copy()
-                    for col in ['open', 'high', 'low', 'close']:
-                        data[col] = data[col] * data['adj_factor'] / \
-                            float(data['adj_factor'][-1])
-                        data[col] = data[col].map(lambda x: '%.4f' % x)
-                        data[col] = data[col].astype(float)
-
-                    # data['volume'] = data['volume'] / \
-                    #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
-
-                    try:
-                        data['high_limit'] = data['high_limit'] * data['adj_factor'] / \
-                            float(data['adj_factor'][-1])
-                        data['low_limit'] = data['high_limit'] * data['adj_factor'] / \
-                            float(data['adj_factor'][-1])
-                    except:
-                        pass
-                    return self.new(data, self.type, 'qfq')
+                    return self.new(
+                        self.groupby(level=1).apply(QA_data_stock_to_qfq_ts),
+                        self.type,
+                        'qfq'
+                    )
             else:
                 QA_util_log_info(
                     'none support type for qfq Current type is: %s' % self.if_fq

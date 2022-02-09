@@ -160,7 +160,7 @@ def _QA_data_stock_to_fq(bfq_data, xdxr_data, fqtype):
     # data['volume'] = data['volume'] / \
     #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
 
-    data['volume'] = data['volume']  if 'volume' in data.columns else data['vol']
+    data['volume'] = data['volume'] if 'volume' in data.columns else data['vol']
     try:
         data['high_limit'] = data['high_limit'] * data['adj']
         data['low_limit'] = data['high_limit'] * data['adj']
@@ -176,6 +176,7 @@ def _QA_data_stock_to_fq(bfq_data, xdxr_data, fqtype):
         axis=1,
         errors='ignore'
     )
+
 
 def _QA_data_etf_to_fq(bfq_data, xdxr_data, fqtype):
     '使用数据库数据进行复权'
@@ -202,7 +203,7 @@ def _QA_data_etf_to_fq(bfq_data, xdxr_data, fqtype):
                          ['fenhong',
                           'peigu',
                           'peigujia',
-                          'songzhuangu','suogu']]
+                          'songzhuangu', 'suogu']]
             ],
             axis=1
         )
@@ -216,11 +217,12 @@ def _QA_data_etf_to_fq(bfq_data, xdxr_data, fqtype):
                      'fenhong',
                      'peigu',
                      'peigujia',
-                     'songzhuangu','suogu']]
+                     'songzhuangu', 'suogu']]
             ],
             axis=1
         )
-    data = data.fillna({'category':0, 'fenhong':0, 'peigu':0, 'peigujia':0, 'songzhuangu':0, 'suogu':1})
+    data = data.fillna({'category': 0, 'fenhong': 0, 'peigu': 0,
+                        'peigujia': 0, 'songzhuangu': 0, 'suogu': 1})
     data['preclose'] = (
         data['close'].shift(1) * 10 - data['fenhong'] +
         data['peigu'] * data['peigujia']
@@ -238,7 +240,7 @@ def _QA_data_etf_to_fq(bfq_data, xdxr_data, fqtype):
     # data['volume'] = data['volume'] / \
     #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
 
-    data['volume'] = data['volume']  if 'volume' in data.columns else data['vol']
+    data['volume'] = data['volume'] if 'volume' in data.columns else data['vol']
     try:
         data['high_limit'] = data['high_limit'] * data['adj']
         data['low_limit'] = data['high_limit'] * data['adj']
@@ -250,10 +252,32 @@ def _QA_data_etf_to_fq(bfq_data, xdxr_data, fqtype):
          'peigujia',
          'songzhuangu',
          'if_trade',
-         'category','suogu'],
+         'category', 'suogu'],
         axis=1,
         errors='ignore'
     )
+
+
+def QA_data_stock_to_qfq_ts(__data):
+    data = __data.copy()
+    for col in ['open', 'high', 'low', 'close']:
+        data[col] = data[col] * data['adj_factor'] / \
+            float(data['adj_factor'][-1])
+        data[col] = data[col].map(lambda x: '%.4f' % x)
+        data[col] = data[col].astype(float)
+
+    # data['volume'] = data['volume'] / \
+    #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
+
+    try:
+        data['high_limit'] = data['high_limit'] * data['adj_factor'] / \
+            float(data['adj_factor'][-1])
+        data['low_limit'] = data['high_limit'] * data['adj_factor'] / \
+            float(data['adj_factor'][-1])
+    except:
+        pass
+    return data
+
 
 def QA_data_stock_to_fq(__data, type_='01'):
 
@@ -313,6 +337,7 @@ def QA_data_stock_to_fq(__data, type_='01'):
     # else:
     #     QA_util_log_info('wrong fq type! Using qfq')
     #     return QA_data_make_qfq(__data, __QA_fetch_stock_xdxr(code))
+
 
 def QA_data_etf_to_fq(__data, type_='01'):
 
