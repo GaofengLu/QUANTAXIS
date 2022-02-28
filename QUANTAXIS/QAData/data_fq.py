@@ -258,14 +258,11 @@ def _QA_data_etf_to_fq(bfq_data, xdxr_data, fqtype):
     )
 
 
-def QA_data_stock_to_qfq_ts(__data):
-    data = __data.copy()
+def QA_data_stock_to_qfq_ts(data):
+    #data = __data.copy()
     for col in ['open', 'high', 'low', 'close']:
-        data[col] = data[col] * data['adj_factor'] / \
-            float(data['adj_factor'][-1])
-        data[col] = data[col].map(lambda x: '%.4f' % x)
-        data[col] = data[col].astype(float)
-
+        data[col] = round(data[col] * data['adj_factor'] /
+                          data['adj_factor'][-1], 4)
     # data['volume'] = data['volume'] / \
     #     data['adj'] if 'volume' in data.columns else data['vol']/data['adj']
 

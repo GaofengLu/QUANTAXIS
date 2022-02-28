@@ -1,19 +1,18 @@
 # coding:utf-8
 
 
-try: 
+try:
     import jqdatasdk
-    #jqdatasdk.auth(input('account:'),input('password:'))
+    # jqdatasdk.auth(input('account:'),input('password:'))
 except:
     raise ModuleNotFoundError
 
 
 def get_price(code="600000.XSHG"):
-    return jqdatasdk.get_price(code,end_date='2018-05-14')
+    return jqdatasdk.get_price(code, end_date='2018-05-14')
 
 
-
-if __name__ =='__main__':
+if __name__ == '__main__':
     print(get_price())
 """
 

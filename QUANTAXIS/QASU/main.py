@@ -27,7 +27,7 @@ from QUANTAXIS.QASU import save_tdx as stdx
 from QUANTAXIS.QASU import save_tdx_parallelism as stdx_parallelism
 from QUANTAXIS.QASU import save_tdx_file as tdx_file
 from QUANTAXIS.QASU import save_gm as sgm
-from QUANTAXIS.QASU import save_jq as sjq
+#from QUANTAXIS.QASU import save_jq as sjq
 from QUANTAXIS.QASU import save_tushare as sts
 from QUANTAXIS.QASU import save_financialfiles
 from QUANTAXIS.QAUtil import DATABASE, print_used_time

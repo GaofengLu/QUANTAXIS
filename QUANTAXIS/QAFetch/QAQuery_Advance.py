@@ -228,14 +228,14 @@ def QA_fetch_stock_min_adv(
         return QA_DataStruct_Stock_min(res_set_index)
 
 
-def QA_fetch_stock_day_full_adv(date):
+def QA_fetch_stock_day_full_adv(date=None, start_date=None, end_date=None, collections=DATABASE.stock_day):
     '''
     '返回全市场某一天的数据'
     :param date:
     :return: QA_DataStruct_Stock_day类 型数据
     '''
     # 🛠 todo 检查日期data参数
-    res = QA_fetch_stock_full(date, 'pd')
+    res = QA_fetch_stock_full(date, start_date, end_date, 'pd', collections)
     if res is None:
         print(
             "QA Error QA_fetch_stock_day_full_adv parameter date=%s call QA_fetch_stock_full return None"
@@ -512,7 +512,7 @@ def QA_fetch_stock_transaction_adv(
         start,
         end,
         format='pd',
-        frequence=frequence, 
+        frequence=frequence,
         collections= collections
     )
     if res is None:

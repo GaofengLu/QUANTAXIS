@@ -11,17 +11,19 @@
 from functools import partial
 from typing import List, Tuple, Union
 
-try:
-    import jqdatasdk
-except:
-    print("jqdatasdk not installed")
+# try:
+#    import jqdatasdk
+# except:
+#    print("jqdatasdk not installed")
 import numpy as np
 import pandas as pd
 
 import statsmodels.api as sm
 from QUANTAXIS.QAAnalysis.QAAnalysis_block import QAAnalysis_block
 from QUANTAXIS.QAFactor.utils import QA_fmt_code_list
-from QUANTAXIS.QAFactor.fetcher import (QA_fetch_stock_basic, QA_fetch_industry_adv)
+from QUANTAXIS.QAFactor.fetcher import (
+    QA_fetch_stock_basic, QA_fetch_industry_adv)
+
 
 def QA_fmt_factor(factor: Union[pd.Series, pd.DataFrame]):
     """
@@ -223,7 +225,8 @@ def QA_fetch_get_factor_groupby(
 
         industry = pd.DataFrame()
         for cursor_date in date_range:
-            df_tmp = QA_fetch_industry_adv(code = stock_list, cursor_date = cursor_date)[["code", "industry_name"]]
+            df_tmp = QA_fetch_industry_adv(code=stock_list, cursor_date=cursor_date)[
+                ["code", "industry_name"]]
             df_tmp["date"] = cursor_date
             industry = industry.append(df_tmp)
         ss = industry.set_index(["date", "code"])["industry_name"]
@@ -247,7 +250,8 @@ def QA_fetch_get_factor_groupby(
         end_time = str(max(factor.index.get_level_values("datetime")))[:10]
         date_range = [pd.Timestamp(end_time)]
         # industries = jqdatasdk.get_industry(stock_list, end_time)
-        ss = QA_fetch_industry_adv(stock_list, end_time)[["code", "industry_name"]].set_index(["date", "code"])["industry_name"]
+        ss = QA_fetch_industry_adv(stock_list, end_time)[
+            ["code", "industry_name"]].set_index(["date", "code"])["industry_name"]
         # industries = {
         #     d: {
         #         s: industries.get(s).get(industry_cls,
@@ -266,9 +270,9 @@ def QA_fetch_get_factor_groupby(
             ["date",
              "code"]
         ).assign(group=ss).reset_index().set_index(["datetime",
-                                                          "code"]
-                                                         ).drop("date",
-                                                                axis=1)
+                                                    "code"]
+                                                   ).drop("date",
+                                                          axis=1)
     )
     group = merged_data["group"].unstack().bfill().stack()
     merged_data["group"] = group
@@ -419,6 +423,7 @@ def QA_fetch_get_factor_start_date(factor: pd.Series) -> pd.DataFrame:
     merged_data["start_date"] = merged_data.index.map(lambda x: ss.loc[x[1]]
                                                       ).tolist()
     return merged_data
+
 
 def QA_fetch_factor_start_date(factor: pd.Series) -> pd.DataFrame:
     """

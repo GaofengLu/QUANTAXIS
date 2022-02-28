@@ -454,6 +454,7 @@ def QA_ts_update_industry(
                     raise ValueError(e2)
     df_results = pd.DataFrame()
     for idx, item in df_industry.iterrows():
+        time.sleep(0.3)
         if idx % 100 == 0:
             print(f"currently saving {idx}th record")
         try:

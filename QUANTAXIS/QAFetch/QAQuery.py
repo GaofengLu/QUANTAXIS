@@ -94,7 +94,6 @@ def QA_fetch_stock_day(
             batch_size=10000
         )
         #res=[QA_util_dict_remove_key(data, '_id') for data in cursor]
-
         res = pd.DataFrame([item for item in cursor])
         try:
             res = res.assign(
@@ -499,12 +498,12 @@ def QA_fetch_stock_to_market_date(stock_code):
             return row['timeToMarket']
 
 
-def QA_fetch_stock_full(date, format='numpy', collections=DATABASE.stock_day):
-    '获取全市场的某一日的数据'
-    Date = str(date)[0:10]
-    if QA_util_date_valid(Date) is True:
+def QA_fetch_stock_full(date=None, start_date=None, end_date=None, format='numpy', collections=DATABASE.stock_day):
+    '获取全市场的某一日或某段时期的数据'
+    _data = []
 
-        _data = []
+    if date:
+        '''
         for item in collections.find({"date_stamp": QA_util_date_stamp(Date)},
                                      batch_size=100000):
             _data.append(
@@ -518,23 +517,29 @@ def QA_fetch_stock_full(date, format='numpy', collections=DATABASE.stock_day):
                     item['date']
                 ]
             )
+        '''
+        Date = str(date)[0:10]
+        _data = list(collections.find(
+            {"date_stamp": QA_util_date_stamp(Date)}, {'_id': 0, 'ts_code': 0, 'trade_date': 0}, batch_size=100000))
         # 多种数据格式
+    else:
+        _data = list(collections.find(
+            { "date_stamp":
+                {
+                    "$lte": QA_util_date_stamp(end_date),
+                    "$gte": QA_util_date_stamp(start_date)
+                }
+            },
+            {'_id': 0, 'ts_code': 0, 'trade_date': 0}, batch_size=100000))
+
+    if _data:
         if format in ['n', 'N', 'numpy']:
             _data = numpy.asarray(_data)
         elif format in ['list', 'l', 'L']:
             _data = _data
         elif format in ['P', 'p', 'pandas', 'pd']:
             _data = DataFrame(
-                _data,
-                columns=[
-                    'code',
-                    'open',
-                    'high',
-                    'low',
-                    'close',
-                    'volume',
-                    'date'
-                ]
+                _data
             )
             _data['date'] = pd.to_datetime(_data['date'], utc=False)
             _data = _data.set_index('date', drop=False)
@@ -546,10 +551,10 @@ def QA_fetch_stock_full(date, format='numpy', collections=DATABASE.stock_day):
 
         return _data
     else:
-        QA_util_log_info(
-            'QA Error QA_fetch_stock_full data parameter date=%s not right' %
-            date
+        QA_util_log_error(
+            'QA Error QA_fetch_stock_full data return none'
         )
+        return None
 
 
 def QA_fetch_etf_day(
