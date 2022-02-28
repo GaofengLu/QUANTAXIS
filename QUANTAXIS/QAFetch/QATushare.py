@@ -156,6 +156,7 @@ def QA_fetch_get_stock_day(name, start='', end='', if_fq='bfq', type_='pd'):
         data = data.sort_index()
         data['date_stamp'] = data['trade_date'].apply(lambda x: cover_time(x))
         data['code'] = data['ts_code'].apply(lambda x: str(x)[0:6])
+        data.rename(columns={'vol': 'volume'}, inplace=True)
         data['fqtype'] = if_fq
         if type_ in ['json']:
             data_json = QA_util_to_json_from_pandas(data)

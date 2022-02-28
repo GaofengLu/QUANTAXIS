@@ -35,6 +35,7 @@ from QUANTAXIS.QAUtil import (
     QA_util_date_valid,
     QA_util_dict_remove_key,
     QA_util_log_info,
+    QA_util_log_error,
     QA_util_code_tolist,
     QA_util_date_str2int,
     QA_util_date_int2str,
@@ -97,7 +98,6 @@ def QA_fetch_stock_day(
         res = pd.DataFrame([item for item in cursor])
         try:
             res = res.assign(
-                volume=res.vol,
                 date=pd.to_datetime(res.date, utc=False)
             ).drop_duplicates((['date',
                                 'code'])).query('volume>1').set_index(
@@ -229,7 +229,6 @@ def QA_fetch_stock_min(
     res = pd.DataFrame([item for item in cursor])
     try:
         res = res.assign(
-            volume=res.vol,
             datetime=pd.to_datetime(res.datetime, utc=False)
         ).query('volume>1').drop_duplicates(['datetime',
                                              'code']).set_index(
@@ -296,7 +295,6 @@ def QA_fetch_stock_transaction(
     res = pd.DataFrame([item for item in cursor])
     try:
         res = res.assign(
-            volume=res.vol,
             datetime=pd.to_datetime(res.datetime, utc=False)
         ).query('volume>1').drop_duplicates(['datetime',
                                              'code']).set_index(
@@ -363,7 +361,6 @@ def QA_fetch_index_transaction(
     res = pd.DataFrame([item for item in cursor])
     try:
         res = res.assign(
-            volume=res.vol,
             datetime=pd.to_datetime(res.datetime, utc=False)
         ).query('volume>1').drop_duplicates(['datetime',
                                              'code']).set_index(
@@ -524,12 +521,12 @@ def QA_fetch_stock_full(date=None, start_date=None, end_date=None, format='numpy
         # 多种数据格式
     else:
         _data = list(collections.find(
-            { "date_stamp":
+            {"date_stamp":
                 {
                     "$lte": QA_util_date_stamp(end_date),
                     "$gte": QA_util_date_stamp(start_date)
                 }
-            },
+             },
             {'_id': 0, 'ts_code': 0, 'trade_date': 0}, batch_size=100000))
 
     if _data:
@@ -602,7 +599,6 @@ def QA_fetch_etf_day(
         res = pd.DataFrame([item for item in cursor])
         try:
             res = res.assign(
-                volume=res.vol,
                 date=pd.to_datetime(res.date, utc=False)
             ).drop_duplicates((['date',
                                 'code'])).query('volume>1').set_index(
@@ -692,7 +688,6 @@ def QA_fetch_etf_min(
     res = pd.DataFrame([item for item in cursor])
     try:
         res = res.assign(
-            volume=res.vol,
             datetime=pd.to_datetime(res.datetime, utc=False)
         ).query('volume>1').drop_duplicates(['datetime',
                                              'code']).set_index(
@@ -791,7 +786,6 @@ def QA_fetch_index_day(
         res = pd.DataFrame([item for item in cursor])
         try:
             res = res.assign(
-                volume=res.vol,
                 date=pd.to_datetime(res.date, utc=False)
             ).drop_duplicates((['date',
                                 'code'])).set_index(
@@ -865,7 +859,6 @@ def QA_fetch_index_min(
     res = pd.DataFrame([item for item in cursor])
     try:
         res = res.assign(
-            volume=res.vol,
             datetime=pd.to_datetime(res.datetime, utc=False)
         ).query('volume>1').drop_duplicates(['datetime',
                                              'code']).set_index(
