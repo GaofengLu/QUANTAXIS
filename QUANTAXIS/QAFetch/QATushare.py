@@ -63,6 +63,25 @@ def get_pro():
         pro = None
     return pro
 
+# 指数相关信息获取
+
+
+def QA_fetch_get_index_basic():
+    pro = get_pro()
+    basic = pro.index_basic(market='SSE')
+    basic_szse = pro.index_basic(market='SZSE')
+    data = pd.concat([basic, basic_szse])
+    data['nodata'] = False  # 默认认为有成分股数据在 index_weight 表里
+    data['code'] = data['ts_code'].apply(lambda x: str(x).split('.')[0])
+    return data
+
+
+def QA_fetch_get_index_weight(index_code, start_date, end_date):
+    pro = get_pro()
+    data = pro.index_weight(index_code=index_code,
+                            start_date=start_date, end_date=end_date)
+    return data
+
 
 def QA_fetch_get_stock_adj(code, end=''):
     """获取股票的复权因子

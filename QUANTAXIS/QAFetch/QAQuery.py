@@ -430,6 +430,30 @@ def QA_fetch_index_list(collections=DATABASE.index_list):
     )
 
 
+def QA_fetch_index_basic(collections=DATABASE.index_basic):
+    '获取指数列表'
+    return pd.DataFrame([item for item in collections.find()]).drop(
+        '_id',
+        axis=1,
+        inplace=False
+    ).set_index(
+        'code',
+        drop=False
+    )
+
+
+def QA_fetch_index_weight(index_code, trade_date, collections=DATABASE.index_weight):
+    '获取指数的成分股'
+    return pd.DataFrame([item for item in collections.find({'code': index_code, 'trade_date': trade_date})]).drop(
+        '_id',
+        axis=1,
+        inplace=False
+    ).set_index(
+        'code',
+        drop=False
+    )
+
+
 def QA_fetch_stock_terminated(collections=DATABASE.stock_terminated):
     '获取股票基本信息 , 已经退市的股票列表'
     # 🛠todo 转变成 dataframe 类型数据

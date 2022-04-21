@@ -95,6 +95,34 @@ def QA_SU_save_index_list(engine, client=DATABASE):
     engine.QA_SU_save_index_list(client=client)
 
 
+def QA_SU_save_index_basic(engine, client=DATABASE):
+    """save index_basic
+
+    Arguments:
+        engine {[type]} -- [description]
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    engine = select_save_engine(engine)
+    engine.QA_SU_save_index_basic(client=client)
+
+
+def QA_SU_save_index_weight(engine, client=DATABASE):
+    """save index_weight
+
+    Arguments:
+        engine {[type]} -- [description]
+
+    Keyword Arguments:
+        client {[type]} -- [description] (default: {DATABASE})
+    """
+
+    engine = select_save_engine(engine)
+    engine.QA_SU_save_index_weight(client=client)
+
+
 def QA_SU_save_etf_list(engine, client=DATABASE):
     """save etf_list
 

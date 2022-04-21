@@ -60,6 +60,8 @@ from QUANTAXIS.QAFetch.QAQuery import (
     QA_fetch_financial_report,
     QA_fetch_stock_list,
     QA_fetch_index_list,
+    QA_fetch_index_basic,
+    QA_fetch_index_weight,
     QA_fetch_future_list,
     QA_fetch_stock_financial_calendar,
     QA_fetch_stock_divyield,
@@ -100,7 +102,7 @@ def QA_fetch_option_day_adv(
     start='all',
     end=None,
     if_drop_index=True,
-                                    # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
     collections=DATABASE.option_day
 ):
     '''
@@ -114,7 +116,7 @@ def QA_fetch_stock_day_adv(
     start='all',
     end=None,
     if_drop_index=True,
-                                   # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
     collections=DATABASE.stock_day
 ):
     '''
@@ -135,7 +137,8 @@ def QA_fetch_stock_day_adv(
         start = '1990-01-01'
         end = str(datetime.date.today())
 
-    res = QA_fetch_stock_day(code, start, end, format='pd', collections= collections)
+    res = QA_fetch_stock_day(
+        code, start, end, format='pd', collections=collections)
     if res is None:
         # 🛠 todo 报告是代码不合法，还是日期不合法
         print(
@@ -159,7 +162,7 @@ def QA_fetch_stock_min_adv(
     end=None,
     frequence='1min',
     if_drop_index=True,
-                                                                                                                              # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
     collections=DATABASE.stock_min
 ):
     '''
@@ -210,7 +213,8 @@ def QA_fetch_stock_min_adv(
 
     # 🛠 todo 报告错误 如果开始时间 在 结束时间之后
 
-    res = QA_fetch_stock_min(code, start, end, format='pd', frequence=frequence, collections= collections)
+    res = QA_fetch_stock_min(
+        code, start, end, format='pd', frequence=frequence, collections=collections)
     if res is None:
         print(
             "QA Error QA_fetch_stock_min_adv parameter code=%s , start=%s, end=%s frequence=%s call QA_fetch_stock_min return None"
@@ -248,12 +252,13 @@ def QA_fetch_stock_day_full_adv(date=None, start_date=None, end_date=None, colle
         #     print("QA Error QA_fetch_stock_day_full set index 'date, code' return None")
         return QA_DataStruct_Stock_day(res_set_index)
 
+
 def QA_fetch_etf_day_adv(
     code,
     start='all',
     end=None,
     if_drop_index=True,
-                                   # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
     collections=DATABASE.etf_day
 ):
     '''
@@ -274,7 +279,8 @@ def QA_fetch_etf_day_adv(
         start = '1990-01-01'
         end = str(datetime.date.today())
 
-    res = QA_fetch_etf_day(code, start, end, format='pd', collections= collections)
+    res = QA_fetch_etf_day(code, start, end, format='pd',
+                           collections=collections)
     if res is None:
         # 🛠 todo 报告是代码不合法，还是日期不合法
         print(
@@ -298,7 +304,7 @@ def QA_fetch_etf_min_adv(
     end=None,
     frequence='1min',
     if_drop_index=True,
-                                                                                                                              # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
     collections=DATABASE.etf_min
 ):
     '''
@@ -349,7 +355,8 @@ def QA_fetch_etf_min_adv(
 
     # 🛠 todo 报告错误 如果开始时间 在 结束时间之后
 
-    res = QA_fetch_etf_min(code, start, end, format='pd', frequence=frequence, collections= collections)
+    res = QA_fetch_etf_min(code, start, end, format='pd',
+                           frequence=frequence, collections=collections)
     if res is None:
         print(
             "QA Error QA_fetch_etf_min_adv parameter code=%s , start=%s, end=%s frequence=%s call QA_fetch_etf_min return None"
@@ -366,12 +373,13 @@ def QA_fetch_etf_min_adv(
         #     return None
         return QA_DataStruct_ETF_min(res_set_index)
 
+
 def QA_fetch_index_day_adv(
     code,
     start,
     end=None,
     if_drop_index=True,
-                                   # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
     collections=DATABASE.index_day
 ):
     '''
@@ -390,7 +398,8 @@ def QA_fetch_index_day_adv(
     # 🛠 todo 报告错误 如果开始时间 在 结束时间之后
     # 🛠 todo 如果相等
 
-    res = QA_fetch_index_day(code, start, end, format='pd', collections= collections)
+    res = QA_fetch_index_day(
+        code, start, end, format='pd', collections=collections)
     if res is None:
         print(
             "QA Error QA_fetch_index_day_adv parameter code=%s start=%s end=%s call QA_fetch_index_day return None"
@@ -451,7 +460,8 @@ def QA_fetch_index_min_adv(
     # print("QA Error QA_fetch_index_min_adv parameter code=%s , start=%s, end=%s is equal, should have time span! " % (code, start, end))
     # return None
 
-    res = QA_fetch_index_min(code, start, end, format='pd', frequence=frequence, collections= collections)
+    res = QA_fetch_index_min(
+        code, start, end, format='pd', frequence=frequence, collections=collections)
     if res is None:
         print(
             "QA Error QA_fetch_index_min_adv parameter code=%s start=%s end=%s frequence=%s call QA_fetch_index_min return None"
@@ -513,7 +523,7 @@ def QA_fetch_stock_transaction_adv(
         end,
         format='pd',
         frequence=frequence,
-        collections= collections
+        collections=collections
     )
     if res is None:
         print(
@@ -579,7 +589,7 @@ def QA_fetch_index_transaction_adv(
         start,
         end,
         format='pd',
-        frequence=frequence, collections= collections
+        frequence=frequence, collections=collections
     )
     if res is None:
         print(
@@ -634,12 +644,27 @@ def QA_fetch_index_list_adv(collections=DATABASE.index_list):
     return index_list_items
 
 
+def QA_fetch_index_basic_adv(collections=DATABASE.index_basic):
+    '''
+    '获取指数列表及基本信息'
+    :param collections: mongodb 数据库
+    :return: DataFrame
+    '''
+    index_list_items = QA_fetch_index_basic(collections)
+    if len(index_list_items) == 0:
+        print(
+            "QA Error QA_fetch_index_basic_adv call item for item in collections.find() return 0 item, maybe the DATABASE.index_basic is empty!"
+        )
+        return None
+    return index_list_items
+
+
 def QA_fetch_future_day_adv(
     code,
     start,
     end=None,
     if_drop_index=True,
-                                   # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
+    # 🛠 todo collections 参数没有用到， 且数据库是固定的， 这个变量后期去掉
     collections=DATABASE.future_day
 ):
     '''
@@ -658,7 +683,8 @@ def QA_fetch_future_day_adv(
     # 🛠 todo 报告错误 如果开始时间 在 结束时间之后
     # 🛠 todo 如果相等
 
-    res = QA_fetch_future_day(code, start, end, format='pd', collections= collections)
+    res = QA_fetch_future_day(
+        code, start, end, format='pd', collections=collections)
     if res is None:
         print(
             "QA Error QA_fetch_future_day_adv parameter code=%s start=%s end=%s call QA_fetch_future_day return None"
@@ -723,7 +749,7 @@ def QA_fetch_future_min_adv(
         start,
         end,
         format='pd',
-        frequence=frequence, collections= collections
+        frequence=frequence, collections=collections
     )
     if res is None:
         print(
@@ -759,6 +785,22 @@ def QA_fetch_future_list_adv(collections=DATABASE.future_list):
     return future_list_items
 
 
+def QA_fetch_stock_yanbao_adv(codes=None, collections=DATABASE.yanbao):
+    # 获取研报信息
+    if codes:
+        return pd.DataFrame([item for item in collections.find({'code': {'$in': codes}})]).drop(
+            '_id',
+            axis=1,
+            inplace=False
+        )
+    else:
+        return pd.DataFrame([item for item in collections.find()]).drop(
+            '_id',
+            axis=1,
+            inplace=False
+        )
+
+
 def QA_fetch_stock_block_adv(
     code=None,
     blockname=None,
@@ -773,12 +815,13 @@ def QA_fetch_stock_block_adv(
     '''
     if isinstance(blockname, (list,)) and len(blockname) > 0:
         reg_join = "|".join(blockname)
-        df = DataFrame([i for i in collections.aggregate([ \
-            {"$match": {"blockname": {"$regex": reg_join}}}, \
-            {"$group": {"_id": "$code", "count": {"$sum": 1}, "blockname": {"$push": "$blockname"}}}, \
-            {"$match": {"count": {"$gte": len(blockname)}}}, \
-            {"$project": {"code": "$_id", "blockname": 1, "_id": 0, }}, \
-            ])])
+        df = DataFrame([i for i in collections.aggregate([
+            {"$match": {"blockname": {"$regex": reg_join}}},
+            {"$group": {"_id": "$code", "count": {"$sum": 1},
+                        "blockname": {"$push": "$blockname"}}},
+            {"$match": {"count": {"$gte": len(blockname)}}},
+            {"$project": {"code": "$_id", "blockname": 1, "_id": 0, }},
+        ])])
         df.blockname = df.blockname.apply(lambda x: ",".join(x))
         return QA_DataStruct_Stock_block(
             df.set_index(["blockname",
@@ -816,8 +859,8 @@ def QA_fetch_stock_block_adv(
     else:
         # 🛠 todo 返回 判断 这个股票是否和属于该板块
         data = pd.DataFrame([item for item in collections.find()]
-                           ).drop(['_id'],
-                                  axis=1)
+                            ).drop(['_id'],
+                                   axis=1)
         data_set_index = data.set_index(['blockname', 'code'], drop=True)
         return QA_DataStruct_Stock_block(data_set_index)
 
@@ -859,7 +902,7 @@ def QA_fetch_stock_realtime_adv(
             )
         ]
         if (items_from_collections is None) or \
-            (len(items_from_collections) == 0):
+                (len(items_from_collections) == 0):
             if verbose:
                 print(
                     "QA Error QA_fetch_stock_realtime_adv find parameter code={} num={} collection={} return NOne"
@@ -873,7 +916,7 @@ def QA_fetch_stock_realtime_adv(
         data_set_index = data.set_index(['datetime',
                                          'code'],
                                         drop=False).drop(['_id'],
-                                                            axis=1)
+                                                         axis=1)
 
         return data_set_index
     else:
@@ -1049,7 +1092,8 @@ def QA_fetch_cryptocurrency_day_adv(
     # 🛠 todo 报告错误 如果开始时间 在 结束时间之后
     # 🛠 todo 如果相等
 
-    res = QA_fetch_cryptocurrency_day(code, start, end, format='pd', collections=collections)
+    res = QA_fetch_cryptocurrency_day(
+        code, start, end, format='pd', collections=collections)
     if res is None:
         print(
             "QA Error QA_fetch_cryptocurrency_day_adv parameter symbol=%s start=%s end=%s call QA_fetch_cryptocurrency_day return None"
@@ -1141,7 +1185,8 @@ def QA_fetch_cryptocurrency_list_adv(
     :param collections: mongodb 数据库
     :return: DataFrame
     '''
-    cryptocurrency_list_items = QA_fetch_cryptocurrency_list(market, collections=collections)
+    cryptocurrency_list_items = QA_fetch_cryptocurrency_list(
+        market, collections=collections)
     if len(cryptocurrency_list_items) == 0:
         print(
             "QA Error QA_fetch_cryptocurrency_list_adv call item for item in collections.find() return 0 item, maybe the DATABASE.cryptocurrency_list is empty!"
@@ -1155,22 +1200,23 @@ if __name__ == '__main__':
     #QA_fetch_stock_realtime_adv(['000001', '000002'], num=10)
     from QUANTAXIS.QAFetch.QAhuobi import FIRST_PRIORITY
     import QUANTAXIS as QA
-    codelist = ['BINANCE.BCHUSDT', 'BINANCE.BSVUSDT', 'BINANCE.BTCUSDT', 'BINANCE.EOSUSDT', 'BINANCE.ETHUSDT', 'BINANCE.ETCUSDT', 'BINANCE.DASHUSDT', 'BINANCE.LTCUSDT', 'BINANCE.XMRUSDT', 'BINANCE.XRPUSDT', 'BINANCE.ZECUSDT']
+    codelist = ['BINANCE.BCHUSDT', 'BINANCE.BSVUSDT', 'BINANCE.BTCUSDT', 'BINANCE.EOSUSDT', 'BINANCE.ETHUSDT',
+                'BINANCE.ETCUSDT', 'BINANCE.DASHUSDT', 'BINANCE.LTCUSDT', 'BINANCE.XMRUSDT', 'BINANCE.XRPUSDT', 'BINANCE.ZECUSDT']
     data1 = QA_fetch_cryptocurrency_day_adv(
-            code=codelist+['HUOBI.{}'.format(code) for code in FIRST_PRIORITY],
-            start='2019-08-21',
-            end='2020-05-28 18:10:00',
-        )
+        code=codelist+['HUOBI.{}'.format(code) for code in FIRST_PRIORITY],
+        start='2019-08-21',
+        end='2020-05-28 18:10:00',
+    )
     print(data1.data)
     data2 = QA_fetch_cryptocurrency_min_adv(
-            code=[
-                'OKEX.BTC-USDT',
-                'OKEX.ETH-USDT',
-            ],
-            start='2017-10-01',
-            end='2020-05-28 18:10:00',
-            frequence='60min'
-        )
+        code=[
+            'OKEX.BTC-USDT',
+            'OKEX.ETH-USDT',
+        ],
+        start='2017-10-01',
+        end='2020-05-28 18:10:00',
+        frequence='60min'
+    )
     print(data2.data)
     data_4h = QA.QA_DataStruct_CryptoCurrency_min(data2.resample('4h'))
     print(data_4h.data)

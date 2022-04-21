@@ -31,10 +31,13 @@ import pandas as pd
 import tushare as ts
 from QUANTAXIS.QAUtil import Parallelism_Thread
 from QUANTAXIS.QAUtil.QACache import QA_util_cache
-
+import QUANTAXIS as QA
 from multiprocessing import cpu_count
 
 from QUANTAXIS.QAFetch.QATushare import (
+    QA_fetch_get_index_basic,
+    QA_fetch_get_index_weight,
+    # QA_fetch_get_index_day,
     QA_fetch_get_stock_day,
     QA_fetch_get_stock_info,
     QA_fetch_get_stock_list,
@@ -45,6 +48,7 @@ from QUANTAXIS.QAFetch.QATushare import (
 from QUANTAXIS.QAUtil import (
     QA_util_date_stamp,
     QA_util_log_info,
+    QA_util_log_error,
     QA_util_time_stamp,
     QA_util_to_json_from_pandas,
     trade_date_sse,
@@ -94,6 +98,79 @@ def now_time():
                                        trade_date_sse, -1)) + ' 15:00:00'
 
     return date_conver_to_new_format(str_now)
+
+
+def QA_SU_save_index_basic(client=DATABASE, ui_log=None, ui_progress=None):
+    index_list = QA_util_to_json_from_pandas(QA_fetch_get_index_basic())
+    coll_index_list = client.index_basic
+    coll_index_list.create_index("code", unique=True)
+
+    for bs in index_list:
+        coll_index_list.update_one({'code': bs['code']}, {
+                                   '$setOnInsert': bs}, upsert=True)
+
+
+def QA_SU_save_index_weight(client=DATABASE, ui_log=None, ui_progress=None):
+    index_list = QA.QA_fetch_index_basic_adv()
+    # 这里要过滤掉没有数据的指数，省得每次都从头开始更新无数据的指数
+    index_list = index_list[index_list.nodata != True]
+
+    def _fetch_data(c, s, e):
+        index_weights = []
+        interval = pd.date_range(s, e,
+                                 freq=pd.tseries.offsets.MonthBegin(1)).strftime("%Y%m%d").tolist()
+
+        for i in range(len(interval) - 1):
+            QA_util_log_info("{} 获取数据{} {} 长度: {}".format(
+                c, interval[i], interval[i+1], len(index_weights)))
+            index_weight = QA_fetch_get_index_weight(
+                c, interval[i], interval[i+1])
+            if not index_weight.empty:
+                index_weight['code'] = c.split('.')[0]
+                index_weights.append(index_weight)
+            else:
+                QA_util_log_info("{} 为空 {} {}".format(
+                    c, interval[i], interval[i+1]))
+
+            time.sleep(0.08)
+
+        if len(index_weights):
+            data = pd.concat(index_weights)
+            client.index_weight.create_index(
+                [("code", pymongo.ASCENDING), ("trade_date", pymongo.ASCENDING)])
+
+            try:
+                client.index_weight.insert_many(
+                    QA_util_to_json_from_pandas(data),
+                    ordered=False
+                )
+            except:
+                QA_util_log_error('保存数据库数据出错 {} {}'.format(c))
+                pass
+
+    for code in index_list.index:
+        index_code = index_list.loc[code]['ts_code']
+        search_cond = {'code': code}
+        ref = client.index_weight.find(search_cond, {'_id': 0, 'index_code': 1, 'trade_date': 1}).sort(
+            'trade_date', pymongo.ASCENDING)
+        ref_count = client.index_weight.count_documents(search_cond)
+        end_date = datetime.date.today().strftime('%Y%m%d')
+
+        if ref_count > 0:
+            last_day = ref[ref_count - 1]['trade_date']
+            QA_util_log_info('{} 有数据{} {}'.format(
+                index_code, ref_count, last_day))
+        else:
+            QA_util_log_info('{} 没有数据, 从头开始获取'.format(index_code))
+            # tushare 貌似只有2011-9月份之后的数据
+            last_day = index_list.loc[code]['list_date']
+            if not last_day:
+                QA_util_log_info('{} 没有list_date, 跳过'.format(index_code))
+                continue
+            if last_day < '20110830':
+                last_day = '20110830'
+
+        _fetch_data(index_code, last_day, end_date)
 
 
 def QA_save_stock_day_all(client=DATABASE):
@@ -364,7 +441,7 @@ class QA_SU_save_day_parallelism_thread(Parallelism_Thread):
                 str += + self._loginfolist[i] + ' '
             str += code
             QA_util_log_info(
-                '##JOB02 Now Saved STOCK_DAY==== {}'.format(
+                '##JOB02 Now Saved ==== {}'.format(
                 ),
                 self.ui_log
             )
@@ -556,5 +633,6 @@ if __name__ == '__main__':
     from pymongo import MongoClient
     client = MongoClient('localhost', 27017)
     db = client['quantaxis']
-    QA_SU_save_stock_day(client=db)
+    # QA_SU_save_stock_day(client=db)
+    QA_SU_save_index_weight(client=db)
     # print(QA_fetch_get_stock_day('000001.SZ', start='20211021'))

@@ -52,6 +52,7 @@ from QUANTAXIS.QASU.main import (QA_SU_crawl_eastmoney, QA_SU_save_bond_day,
                                  QA_SU_save_future_list, QA_SU_save_future_min,
                                  QA_SU_save_future_min_all,
                                  QA_SU_save_index_day, QA_SU_save_index_list,
+                                 QA_SU_save_index_basic, QA_SU_save_index_weight,
                                  QA_SU_save_index_min,
                                  QA_SU_save_index_transaction,
                                  QA_SU_save_option_50etf_day,
@@ -282,6 +283,37 @@ class CLI(cmd.Cmd):
                 self.print_crawl_usage()
         self.lastcmd = ""
 
+    '''
+            命令格式：save option_contract_list 保存上市的期权合约信息（不包括已经过期摘牌的合约数据）\n\
+            # 命令格式：save 50etf_option_day : 保存上海证券交易所50ETF期权日线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save 50etf_option_min : 保存上海证券交易所50ETF期权分钟线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save 300etf_option_day : 保存上海证券交易所300ETF期权日线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save 300etf_option_min : 保存上海证券交易所300ETF期权分钟线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save option_commodity_day : 保存商品期权日线数据（不包括已经过期摘牌的数据） \n\
+            # 命令格式：save option_commodity_min : 保存商品期权分钟线数据（不包括已经过期摘牌的数据） \n\
+            命令格式：save option_day_all : 保存上海证券交易所所有期权日线数据（不包括已经过期摘牌的数据） \n\
+            命令格式：save option_min_all : 保存上海证券交易所所有期权分钟数据（不包括已经过期摘牌的数据） \n\
+            命令格式：save bond_day  : 保存债券日线数据 \n\
+            命令格式：save single_bond_day  : 保存单个债券日线数据 \n\
+            命令格式：save bond_min  : 保存债券分钟线数据 \n\
+            命令格式：save single_bond_min  : 保存单个债券分钟线数据 \n\
+            命令格式：save bond_list : 保存债券列表 \n\
+            命令格式：save bitmex : 保存bitmex交易所日线\现货交易对小时线数据 \n\
+            命令格式：save binance : 保存币安交易所数据 \n\
+            命令格式：save binance all : 一次性保存币安交易所日/小时/30/15/5/1分钟线数据（耗时很长） \n\
+            命令格式：save binance 1day/1hour/1min : 单独保存币安交易所日/小时/分钟数据 \n\
+            命令格式：save bitfinex : 保存bitfinex交易所数据 \n\
+            命令格式：save bitfinex all : 一次性保存bitfinex交易所日/小时/30/15/5/1分钟线数据（耗时很长） \n\
+            命令格式：save bitfinex 1day/1hour/1min : 单独保存bitfinex交易所日/小时/分钟数据 \n\
+            命令格式：save huobi : 保存火币Pro交易所日/小时/分钟现货交易对数据 \n\
+            命令格式：save huobi all : 一次性保存火币Pro交易所日/小时/30/15/5/1分钟线数据（耗时很长） \n\
+            命令格式：save huobi 1day/1hour/1min/5min/15min/30min : 单独保存火币Pro交易所日/小时/分钟线数据 \n\
+            命令格式：save huobi realtime : 接收火币Pro交易所实时行情（仅排名前30的主要币种）\n\
+            命令格式：save okex : 保存OKEx交易所数据 \n\
+            命令格式：save okex all : 一次性保存OKEx交易所日/小时/30/15/5/1分钟线数据（耗时很长） \n\
+            命令格式：save okex 86400/3600/1800/900/300/60 : 单独保存OKEx交易所日/小时/30/15/5/1分钟数据 \n\
+        '''
+
     def print_save_usage(self):
         print(
             "Usage: \n\
@@ -296,8 +328,10 @@ class CLI(cmd.Cmd):
             命令格式: save ts_financial: save ts_financial_reports \n\
             命令格式: save ts_stock_basic: save ts_stock_basic 获取tushare个股基本信息（pro.stock_basic)\n\
             命令格式: save ts_daily: save ts_daily 获取tushare每日指标（pe，换手率等 pro.daily_basic) \n\
-            命令格式: save ts_daily: save ts_namechange 获取tushare股票曾用名 \n\
+            命令格式: save ts_namechange: save ts_namechange 获取tushare股票曾用名 \n\
             命令格式: save ts_stock_day: save ts_stock_day 获取tushare日线数据\n\
+            命令格式: save ts_index_basic: save ts_index_basic 获取tushare指数基础数据，列表\n\
+            命令格式: save ts_index_weight: save ts_index_weight 获取tushare指数成分股及权重数据\n\
             ------------------------------------------------------------ \n\
             命令格式：save stock_xdxr : 保存日除权除息数据 \n\
             命令格式：save etf_xdxr : 保存etf日除权除息数据 \n\
@@ -322,37 +356,9 @@ class CLI(cmd.Cmd):
             命令格式：save stock_block: 保存板块 \n\
             命令格式：save stock_info : 保存tushare数据接口获取的股票列表 \n\
             命令格式：save financialfiles : 保存高级财务数据(自1996年开始) \n\
-            命令格式：save option_contract_list 保存上市的期权合约信息（不包括已经过期摘牌的合约数据）\n\
-            # 命令格式：save 50etf_option_day : 保存上海证券交易所50ETF期权日线数据（不包括已经过期摘牌的数据） \n\
-            # 命令格式：save 50etf_option_min : 保存上海证券交易所50ETF期权分钟线数据（不包括已经过期摘牌的数据） \n\
-            # 命令格式：save 300etf_option_day : 保存上海证券交易所300ETF期权日线数据（不包括已经过期摘牌的数据） \n\
-            # 命令格式：save 300etf_option_min : 保存上海证券交易所300ETF期权分钟线数据（不包括已经过期摘牌的数据） \n\
-            # 命令格式：save option_commodity_day : 保存商品期权日线数据（不包括已经过期摘牌的数据） \n\
-            # 命令格式：save option_commodity_min : 保存商品期权分钟线数据（不包括已经过期摘牌的数据） \n\
-            命令格式：save option_day_all : 保存上海证券交易所所有期权日线数据（不包括已经过期摘牌的数据） \n\
-            命令格式：save option_min_all : 保存上海证券交易所所有期权分钟数据（不包括已经过期摘牌的数据） \n\
             命令格式：save index_list : 保存指数列表 \n\
             命令格式：save etf_list : 保存etf列表 \n\
             命令格式：save future_list : 保存期货列表 \n\
-            命令格式：save bond_day  : 保存债券日线数据 \n\
-            命令格式：save single_bond_day  : 保存单个债券日线数据 \n\
-            命令格式：save bond_min  : 保存债券分钟线数据 \n\
-            命令格式：save single_bond_min  : 保存单个债券分钟线数据 \n\
-            命令格式：save bond_list : 保存债券列表 \n\
-            命令格式：save bitmex : 保存bitmex交易所日线\现货交易对小时线数据 \n\
-            命令格式：save binance : 保存币安交易所数据 \n\
-            命令格式：save binance all : 一次性保存币安交易所日/小时/30/15/5/1分钟线数据（耗时很长） \n\
-            命令格式：save binance 1day/1hour/1min : 单独保存币安交易所日/小时/分钟数据 \n\
-            命令格式：save bitfinex : 保存bitfinex交易所数据 \n\
-            命令格式：save bitfinex all : 一次性保存bitfinex交易所日/小时/30/15/5/1分钟线数据（耗时很长） \n\
-            命令格式：save bitfinex 1day/1hour/1min : 单独保存bitfinex交易所日/小时/分钟数据 \n\
-            命令格式：save huobi : 保存火币Pro交易所日/小时/分钟现货交易对数据 \n\
-            命令格式：save huobi all : 一次性保存火币Pro交易所日/小时/30/15/5/1分钟线数据（耗时很长） \n\
-            命令格式：save huobi 1day/1hour/1min/5min/15min/30min : 单独保存火币Pro交易所日/小时/分钟线数据 \n\
-            命令格式：save huobi realtime : 接收火币Pro交易所实时行情（仅排名前30的主要币种）\n\
-            命令格式：save okex : 保存OKEx交易所数据 \n\
-            命令格式：save okex all : 一次性保存OKEx交易所日/小时/30/15/5/1分钟线数据（耗时很长） \n\
-            命令格式：save okex 86400/3600/1800/900/300/60 : 单独保存OKEx交易所日/小时/30/15/5/1分钟数据 \n\
             ----------------------------------------------------------\n\
             if you just want to save daily data just\n\
                 save all+ save stock_block+save stock_info, it about 1G data \n\
@@ -566,7 +572,10 @@ class CLI(cmd.Cmd):
                 QA_ts_update_namechange()
             elif len(arg) == 1 and arg[0] == 'ts_stock_day':
                 QA_SU_save_stock_day('ts')
-
+            elif len(arg) == 1 and arg[0] == 'ts_index_basic':
+                QA_SU_save_index_basic('ts')
+            elif len(arg) == 1 and arg[0] == 'ts_index_weight':
+                QA_SU_save_index_weight('ts')
             elif len(arg) == 1 and arg[0] == "binance":
                 QA_SU_save_binance_symbol()
                 QA_SU_save_binance_1day()
